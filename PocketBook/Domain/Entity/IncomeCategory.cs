@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entity
 {
-    public class ConsumptionCategory
+    public class IncomeCategory
     {
-        public ConsumptionCategory()
+        public IncomeCategory()
         {
-            Consumptions = new HashSet<Consumption>();
+            Incomes = new HashSet<Income>();
         }
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -24,7 +24,7 @@ namespace Domain.Entity
         public decimal Limit { get; set; }
 
 
-        public virtual ICollection<Consumption> Consumptions { get; set; } = new List<Consumption>();
+        public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
 
         [ForeignKey(nameof(UserId))]
         public virtual User UserNavigation { get; set; } = null!;
