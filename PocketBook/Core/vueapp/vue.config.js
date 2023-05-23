@@ -23,11 +23,12 @@ module.exports = {
             key: fs.readFileSync(keyFilePath),
             cert: fs.readFileSync(certFilePath),
         },
-        proxy: {
-            '^/weatherforecast': {
-                target: 'https://localhost:7137/'
-            }
-        },
+        //TODO proxy - подключение к контроллерам
+        //proxy: {
+        //    '^/values': {
+        //        target: 'https://localhost:7137/',
+        //    }
+        //},
         port: 5002
     }
 }

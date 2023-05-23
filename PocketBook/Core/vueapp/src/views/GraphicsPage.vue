@@ -133,7 +133,7 @@ ChartJS.register(Title, Tooltip, Legend,ArcElement,
   PointElement,LineElement, BarElement, CategoryScale, LinearScale)
 
 export default {
-    name: 'Graphics',
+    name: 'GraphicsPge',
     components: {
     Doughnut,Bar,Line
   },
