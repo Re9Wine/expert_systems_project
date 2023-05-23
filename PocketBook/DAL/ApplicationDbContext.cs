@@ -18,13 +18,34 @@ namespace DAL
         public DbSet<Income> Incomes => Set<Income>();
         public DbSet<Consumption> Consumptions => Set<Consumption>();
         public DbSet<ConsumptionCategory> ConsumptionCategories => Set<ConsumptionCategory>();
+        public DbSet<IncomeCategory> IncomeCategories => Set<IncomeCategory>();
+        public DbSet<User> Users => Set<User>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseNpgsql("Host=localhost;Port=5433;Database=usersdb;Username=postgres;Password=здесь_указывается_пароль_от_postgres"); // TODO разобраться в подключении
+                optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=PocketBook;Username=postgres;Password=123");
             }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasIndex(e => e.Login, "UQ__login__U").IsUnique();
+                entity.HasIndex(e => e.Email, "UQ__email__U").IsUnique();
+            });
+
+            modelBuilder.Entity<ConsumptionCategory>(entity =>
+            {
+                entity.HasIndex(e => e.Name, "UQ__name_CC").IsUnique();
+            });
+
+            modelBuilder.Entity<IncomeCategory>(entity =>
+            {
+                entity.HasIndex(e => e.Name, "UQ__name__IC").IsUnique();
+            });
         }
     }
 }
