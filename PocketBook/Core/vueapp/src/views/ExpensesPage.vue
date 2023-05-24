@@ -37,9 +37,9 @@
                 <div class="select">
                     <select v-model="redactData.Name" name="select">
                         <option disabled>Выберите категорию</option>
-                        <option value="value1">Еда</option>
-                        <option value="value2">Развлечения</option>
-                        <option value="value3">Транспорт</option>
+                        <option value="Еда">Еда</option>
+                        <option value="Развлечения">Развлечения</option>
+                        <option value="Транспорт">Транспорт</option>
                     </select>
                 </div>
                 <div class="input-block">
@@ -77,7 +77,7 @@
         methods: {
             async handleSubmit() {
                 try {
-                    const response = await fetch('ConsumptionCategory', {
+                    const response = await fetch('values', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -97,7 +97,7 @@
             },
             async redactSubmit() {
                 try {
-                    const response = await fetch('ConsumptionCategory', {
+                    const response = await fetch('values', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -106,6 +106,7 @@
                     });
                     if (response.ok) {
                         console.log('Data sent successfully');
+                        console.log(this.redactData);
                         this.redactData.Name = '';
                         this.redactData.Limit = '';
                     } else {
