@@ -34,7 +34,7 @@ namespace webapi.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] object formData)
         {
-            ConsumptionCategory test = JsonSerializer.Deserialize<ConsumptionCategory>((JsonElement)formData);
+            //ConsumptionCategory test = JsonSerializer.Deserialize<ConsumptionCategory>((JsonElement)formData);
 
             //Console.WriteLine($"Received data: Field1 = {formData.Name}, Field2 = {formData.Limit}");
             return Ok();
