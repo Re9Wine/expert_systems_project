@@ -11,17 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(optionts => optionts.UseNpgsql(builder.Configuration.GetConnectionString("DataBase")));
 
-builder.Services.AddScoped<IConsumptionCategoryRepository, ConsumptionCategoryRepository>();
-builder.Services.AddScoped<IConsumptionRepository, ConsumptionRepository>();
-builder.Services.AddScoped<IIncomeCategoryRepository, IncomeCategoryRepository>();
-builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IOperationCategoryRepository, OperationCategoryRepository>();
+builder.Services.AddScoped<IOperationCategorySercvice, OperationCategorySercvice>();
 
-builder.Services.AddScoped<IConsumptionCategoryService, ConsumptionCategoryService>();
-builder.Services.AddScoped<IConsumptionService, ConsumptionService>();
-builder.Services.AddScoped<IIncomeCategoryService, IncomeCategoryService>();
-builder.Services.AddScoped<IIncomeService, IncomeService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IOperationWithMoneyRepository, OperationWithMoneyRepository>();
+builder.Services.AddScoped<IOperationWithMoneyService, OperationWithMoneyService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
