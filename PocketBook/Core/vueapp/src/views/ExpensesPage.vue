@@ -13,14 +13,14 @@
                         Создать
                     </h2>
                 </div>
-                <form action="" method="get" class="form-example">
+                <form @submit.prevent="handleSubmit" id="createForm" class="createForm">
                     <div class="input-block">
-                        <input type="text" placeholder="Название категории"/>
-                        <input type="number" placeholder="Лимит"/>
+                        <input v-model="addData.Name" name="Name" type="text" placeholder="Название категории"/>
+                        <input v-model="addData.Limit" name="Limit" type="number" placeholder="Лимит"/>
                     </div>
             
                     <div class="button-block add-button">
-                        <button>
+                        <button type="submit" class="submitButton">
                             <span>Создать</span>
                         </button>
                     </div>
@@ -33,9 +33,9 @@
                     Редактировать
                 </h2>
             </div>
-            <form action="" method="get" class="form-example">
+            <form @submit.prevent="redactSubmit" class="form-example">
                 <div class="select">
-                    <select name="select">
+                    <select v-model="redactData.Name" name="select">
                         <option disabled>Выберите категорию</option>
                         <option value="value1">Еда</option>
                         <option value="value2">Развлечения</option>
@@ -43,7 +43,7 @@
                     </select>
                 </div>
                 <div class="input-block">
-                    <input type="number" placeholder="Лимит"/>
+                    <input v-model="redactData.Limit" type="number" placeholder="Лимит"/>
                 </div>
             
                 <div class="button-block edit-button">
@@ -57,6 +57,135 @@
 
     </main>
 </template>
+
+
+
+<script>
+    export default {
+        data() {
+            return {
+                addData: {
+                    Name: '',
+                    Limit: ''
+                },
+                redactData: {
+                    Name: '',
+                    Limit: ''
+                },
+            };
+        },
+        methods: {
+            async handleSubmit() {
+                try {
+                    const response = await fetch('ConsumptionCategory', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(this.addData)
+                    });
+                    if (response.ok) {
+                        console.log('Data sent successfully');
+                        this.addData.Name = '';
+                        this.addData.Limit = '';
+                    } else {
+                        console.log('Error sending data', response);
+                    }
+                } catch (error) {
+                    console.log('Error sending data', error);
+                }
+            },
+            async redactSubmit() {
+                try {
+                    const response = await fetch('ConsumptionCategory', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(this.redactData)
+                    });
+                    if (response.ok) {
+                        console.log('Data sent successfully');
+                        this.redactData.Name = '';
+                        this.redactData.Limit = '';
+                    } else {
+                        console.log('Error sending data', response);
+                    }
+                } catch (error) {
+                    console.log('Error sending data', error);
+                }
+            },
+        }
+    };
+
+
+
+//import axios from 'axios';
+
+//export default {
+//  data() {
+//    return {
+//      formData: {
+//        Name: '',
+//        Limit: ''
+//      }
+//    };
+//  },
+//  methods: {
+//    handleSubmit(event) {
+//      event.preventDefault(); // Предотвращаем перезагрузку страницы
+
+//      // Отправка данных на сервер
+//      axios.post('values', this.formData)
+//        .then(response => {
+//          // Обработка успешного ответа от сервера
+//          console.log(response.data);
+//          // Дополнительные действия при необходимости
+//        })
+//        .catch(error => {
+//          // Обработка ошибки при отправке данных на сервер
+//          console.error(error);
+//          // Дополнительные действия при необходимости
+//        });
+
+//        // fetch('values',{
+//        //     headers:{
+//        //         'Content-Type':'application/json'
+//        //     },
+//        //     method:'POST',
+//        //     body:JSON.stringify(this.formData)
+//        // })
+//        // .then(response => {
+//        // // Обработка успешного ответа от сервера
+//        //     console.log('Data sent successfully!');
+//        // })
+
+//      // Очищаем данные формы
+//      this.formData.Name = '';
+//      this.formData.Limit = '';
+//    }
+//  }
+//};
+
+
+// import '../js/test'
+
+    //fetch('values', {
+    //    method: 'POST',
+    //    body: new FormData(document.getElementById('createForm'))
+
+    //});
+
+    // var formdata = new FormData(document.getElementById('createForm'))
+    // console.log(formdata)
+
+    //fetch('values')
+    //    .then(response => response.json())
+    //    .then(data => {
+    //        console.log(data)
+    //        return;
+    //    });
+</script>
 
 <style lang="scss">
 

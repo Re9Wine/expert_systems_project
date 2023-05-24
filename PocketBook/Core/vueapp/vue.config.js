@@ -24,11 +24,11 @@ module.exports = {
             cert: fs.readFileSync(certFilePath),
         },
         //TODO proxy - подключение к контроллерам
-        //proxy: {
-        //    '^/values': {
-        //        target: 'https://localhost:7137/',
-        //    }
-        //},
+        proxy: {
+            '^/values': {
+                target: 'https://localhost:7137/',
+            }
+        },
         port: 5002
     }
 }
