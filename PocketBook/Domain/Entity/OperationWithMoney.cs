@@ -3,14 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entity
 {
-    public class Income
+    public class OperationWithMoney
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
-        public Guid IncomeCategoryId { get; set; }
-
-        public Guid UserId { get; set; }
+        public Guid OperationId { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -21,13 +19,11 @@ namespace Domain.Entity
         public decimal Value { get; set; }
 
         [Required]
-        public DateOnly Date { get; set; }
+        [Column(TypeName = "timestamp without time zone")]
+        public DateTime Date { get; set; } = DateTime.Now;
 
 
-        [ForeignKey(nameof(IncomeCategoryId))]
-        public virtual IncomeCategory IncomeCategoriesNavigation { get; set; } = null!;
-
-        [ForeignKey(nameof(UserId))]
-        public virtual User UserNavigation { get; set; } = null!;
+        [ForeignKey(nameof(OperationId))]
+        public virtual OperationCategory OperationCategoryNavigation { get; set; } = null!;
     }
 }

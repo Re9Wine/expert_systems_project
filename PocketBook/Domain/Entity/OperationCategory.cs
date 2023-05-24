@@ -3,17 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entity
 {
-    public class IncomeCategory
+    public class OperationCategory
     {
-        public IncomeCategory()
+        public OperationCategory()
         {
-            Incomes = new HashSet<Income>();
+            OperationWithMoneys = new HashSet<OperationWithMoney>();
         }
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
-        public Guid UserId { get; set; }
+        [Required]
+        public string Type { get; set; } = null!;
 
         [Required]
         [StringLength(100)]
@@ -21,12 +22,8 @@ namespace Domain.Entity
 
         [Required]
         [Column(TypeName = "decimal(20, 2)")]
-        public decimal Limit { get; set; }
+        public int Limit { get; set; }
 
-
-        public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
-
-        [ForeignKey(nameof(UserId))]
-        public virtual User UserNavigation { get; set; } = null!;
+        public virtual ICollection<OperationWithMoney> OperationWithMoneys { get; set; }
     }
 }
