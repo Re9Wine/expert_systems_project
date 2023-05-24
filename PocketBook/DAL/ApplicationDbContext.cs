@@ -15,11 +15,8 @@ namespace DAL
             Database.EnsureCreated();
         }
 
-        public DbSet<Income> Incomes => Set<Income>();
-        public DbSet<Consumption> Consumptions => Set<Consumption>();
-        public DbSet<ConsumptionCategory> ConsumptionCategories => Set<ConsumptionCategory>();
-        public DbSet<IncomeCategory> IncomeCategories => Set<IncomeCategory>();
-        public DbSet<User> Users => Set<User>();
+        public DbSet<OperationCategory> OperationCategories => Set<OperationCategory>();
+        public DbSet<OperationWithMoney> OperationWithMoneys => Set<OperationWithMoney>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -31,20 +28,9 @@ namespace DAL
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasIndex(e => e.Login, "UQ__login__U").IsUnique();
-                entity.HasIndex(e => e.Email, "UQ__email__U").IsUnique();
-            });
-
-            modelBuilder.Entity<ConsumptionCategory>(entity =>
+            modelBuilder.Entity<OperationCategory>(entity =>
             {
                 entity.HasIndex(e => e.Name, "UQ__name_CC").IsUnique();
-            });
-
-            modelBuilder.Entity<IncomeCategory>(entity =>
-            {
-                entity.HasIndex(e => e.Name, "UQ__name__IC").IsUnique();
             });
         }
     }
