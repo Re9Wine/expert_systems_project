@@ -21,7 +21,7 @@ namespace Domain.Entity
 
         [Required]
         [Column(TypeName = "decimal(20, 2)")]
-        public decimal Limit { get; set; }
+        public int Limit { get; set; }
 
 
         public virtual ICollection<Consumption> Consumptions { get; set; } = new List<Consumption>();
