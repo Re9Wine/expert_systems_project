@@ -22,7 +22,7 @@ namespace Domain.Entity
 
         [Required]
         [Column(TypeName = "decimal(20, 2)")]
-        public int Limit { get; set; }
+        public decimal Limit { get; set; }
 
         public virtual ICollection<OperationWithMoney> OperationWithMoneys { get; set; }
     }

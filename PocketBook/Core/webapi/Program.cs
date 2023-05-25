@@ -12,9 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(optionts => optionts.UseNpgsql(builder.Configuration.GetConnectionString("DataBase")));
 
 builder.Services.AddScoped<IOperationCategoryRepository, OperationCategoryRepository>();
-builder.Services.AddScoped<IOperationCategorySercvice, OperationCategorySercvice>();
-
 builder.Services.AddScoped<IOperationWithMoneyRepository, OperationWithMoneyRepository>();
+builder.Services.AddScoped<IOperationWithMoneyForTableViewRepository, OperationWithMoneyForTableViewRepository>();
+
+builder.Services.AddScoped<IOperationCategorySercvice, OperationCategorySercvice>();
 builder.Services.AddScoped<IOperationWithMoneyService, OperationWithMoneyService>();
 
 builder.Services.AddControllers();
