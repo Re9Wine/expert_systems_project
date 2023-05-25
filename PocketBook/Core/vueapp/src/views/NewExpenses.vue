@@ -5,17 +5,17 @@
                 Добавление расходов/доходов
             </h1>
         </div>
-        <form action="" method="get" class="form-example">
+        <form @submit.prevent="handleSubmit"  class="form-example">
             <div class="form_radio_btn">
-	            <input id="radio-1" type="radio" name="radio" value="1" checked>
+	            <input v-model="formData.TypeOperation" id="radio-1" type="radio" name="radio" value='income'>
 	            <label for="radio-1">Доходы</label>
             </div>
             <div class="form_radio_btn">
-                <input id="radio-2" type="radio" name="radio" value="2">
+                <input v-model="formData.TypeOperation" id="radio-2" type="radio" name="radio" value='consumption'>
 	            <label for="radio-2">Рассходы</label>
             </div>
             <div class="select">
-                <select name="select">
+                <select v-model="formData.addData.Name" name="select">
                     <option disabled>Выберите категорию</option>
                     <option value="value1">Еда</option>
                     <option value="value2">Развлечения</option>
@@ -23,18 +23,63 @@
                 </select>
             </div>
             <div class="input-block">
-                <input type="number" placeholder="Сумма"/>
-                <input type="text" placeholder="Описание"/>
+                <input v-model="formData.addData.Value" type="number" placeholder="Сумма"/>
+                <input v-model="formData.addData.Description" type="text" placeholder="Описание"/>
             </div>
             
             <div class="button-block">
-                <button>
+                <button type="submit">
                     <span>Добавить</span>
                 </button>
             </div>
         </form>
     </main>
 </template>
+
+<script>
+    export default {
+        data() {
+            return {
+                formData: {
+                    TypeOperation: '',
+                    addData: {
+                        Name: '',
+                        Value: '',
+                        Description: ''
+                    },
+                }
+            };
+        },
+        methods: {
+            async handleSubmit() {
+                try {
+                    const response = await fetch('values', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(this.formData)
+                    });
+                    if (response.ok) {
+                        console.log('Data sent successfully');
+                        console.log(this.formData);
+                        console.log(this.formData.addData);
+                        this.formData.addData.Name = '';
+                        this.formData.addData.Limit = '';
+                        this.formData.addData.Value = '';
+                        this.formData.addData.Description = '';
+                    } else {
+                        console.log('Error sending data', response);
+                    }
+                } catch (error) {
+                    console.log('Error sending data', error);
+                }
+            },
+        }
+    }
+
+
+</script>
 
 <style lang="scss">
 
