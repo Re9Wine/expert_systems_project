@@ -66,7 +66,7 @@
                         console.log(this.formData.addData);
                         this.formData.addData.Name = '';
                         this.formData.addData.Limit = '';
-                        this.formData.addData.Sum = '';
+                        this.formData.addData.Value = '';
                         this.formData.addData.Description = '';
                     } else {
                         console.log('Error sending data', response);
