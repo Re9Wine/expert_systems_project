@@ -37,31 +37,9 @@ namespace DAL.Implementations
             return Task.FromResult(_context.SaveChangesAsync().Result != 0);
         }
 
-        public Task<List<OperationWithMoney>> GetAll()
-        {
-            return _context.OperationWithMoneys.ToListAsync();
-        }
-
         public Task<OperationWithMoney?> GetById(Guid id)
         {
             return _context.OperationWithMoneys.FirstOrDefaultAsync(x => x.Id == id);
-        }
-
-        public Task<List<OperationWithMoney>> GetFiveLatestConsumption()
-        {
-            return _context.OperationWithMoneys.OrderBy(x => x.Date).Where(x => x.Value < 0).Take(5).ToListAsync();
-        }
-
-        public Task<bool> Update(OperationWithMoney entity)
-        {
-            if (entity == null)
-            {
-                return Task.FromResult(false);
-            }
-
-            _context.OperationWithMoneys.Update(entity);
-
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
         }
     }
 }

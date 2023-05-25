@@ -1,16 +1,19 @@
 ﻿using DAL.Interfaces;
 using Domain.Entity;
+using Domain.View;
 using Service.Interfaces;
 
 namespace Service.Implementations
 {
     public class OperationWithMoneyService : IOperationWithMoneyService
     {
-        private readonly IOperationWithMoneyRepository _repository;
+        private readonly IOperationWithMoneyRepository _operationWithMoneyRepository;
+        private readonly IOperationWithMoneyForTableViewRepository _operationWithMoneyForTableViewRepository;
 
-        public OperationWithMoneyService(IOperationWithMoneyRepository repository)
+        public OperationWithMoneyService(IOperationWithMoneyRepository operationWithMoneyRepository, IOperationWithMoneyForTableViewRepository operationWithMoneyForTableViewRepository)
         {
-            _repository = repository;
+            _operationWithMoneyRepository = operationWithMoneyRepository;
+            _operationWithMoneyForTableViewRepository = operationWithMoneyForTableViewRepository;
         }
 
         public Task<bool> Create(OperationWithMoney operationWithMoney)
@@ -20,44 +23,57 @@ namespace Service.Implementations
                 return Task.FromResult(false);
             }
 
-            return _repository.Create(operationWithMoney);
+            return _operationWithMoneyRepository.Create(operationWithMoney);
         }
 
         public async Task<bool> Delete(Guid id)
         {
-            var operationWithMoney = await _repository.GetById(id);
+            var operationWithMoney = await _operationWithMoneyRepository.GetById(id);
 
             if (operationWithMoney == null)
             {
                 return false;
             }
 
-            return await _repository.Delete(operationWithMoney);
+            return await _operationWithMoneyRepository.Delete(operationWithMoney);
         }
 
-        public Task<List<OperationWithMoney>> GetAll()
+        public Task<List<OperationWithMoneyForTableView>> GetFiveLatesConsumption()
         {
-            return _repository.GetAll();
+            return _operationWithMoneyForTableViewRepository.GetFiveLatestConsumption();
         }
 
-        public Task<OperationWithMoney?> GetById(Guid id)
+        public async Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumption()
         {
-            return _repository.GetById(id);
-        }
+            DateTime dateNow = DateTime.Now;
+            DateTime dateWeekAgo = dateNow.AddDays(-7);
 
-        public Task<List<OperationWithMoney>> GetFiveLatestConsumption()
-        {
-            return _repository.GetFiveLatestConsumption();
-        }
+            var operationsPerWeek = await _operationWithMoneyForTableViewRepository.GetWeeklyConsumption(dateWeekAgo);
+            var operationsPerWeekByCategory = new List<OperationWithMoneyForTableView>();
 
-        public Task<bool> Update(OperationWithMoney operationWithMoney)
-        {
-            if (operationWithMoney == null || operationWithMoney.Value == 0)
+            for (int i = 0; i < operationsPerWeek.Count(); i++)
             {
-                return Task.FromResult(false);
+                if (operationsPerWeekByCategory.Any(x => x.Category == operationsPerWeek[i].Category))
+                {
+                    var buffer = operationsPerWeekByCategory.FirstOrDefault(x => x.Category == operationsPerWeek[i].Category);
+
+                    if(buffer != null)
+                    {
+                        buffer.Value += operationsPerWeek[i].Value;
+                    }
+                }
+                else
+                {
+                    operationsPerWeekByCategory.Add(new OperationWithMoneyForTableView()
+                    {
+                        Category = operationsPerWeek[i].Category,
+                        Value = operationsPerWeek[i].Value,
+                    });
+
+                }
             }
 
-            return _repository.Update(operationWithMoney);
+            return operationsPerWeekByCategory;
         }
     }
 }

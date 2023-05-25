@@ -2,8 +2,13 @@
 
 namespace DAL.Interfaces
 {
-    public interface IOperationCategoryRepository : IBaseRepository<OperationCategory>
+    public interface IOperationCategoryRepository
     {
+        Task<OperationCategory?> GetById(Guid id);
+        Task<List<OperationCategory>> GetAll();
+        Task<bool> Create(OperationCategory entity);
+        Task<bool> Update(OperationCategory entity);
+        Task<bool> Delete(OperationCategory entity);
         Task<List<OperationCategory>> GetByType(string type);
     }
 }

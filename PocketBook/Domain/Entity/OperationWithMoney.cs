@@ -5,6 +5,13 @@ namespace Domain.Entity
 {
     public class OperationWithMoney
     {
+        public OperationWithMoney()
+        {
+            var bufferDate = DateTime.Now;
+
+            Date = new DateTime(bufferDate.Year, bufferDate.Month, bufferDate.Day, bufferDate.Hour, bufferDate.Minute, bufferDate.Second);
+        }
+
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
@@ -20,7 +27,7 @@ namespace Domain.Entity
 
         [Required]
         [Column(TypeName = "timestamp without time zone")]
-        public DateTime Date { get; set; } = DateTime.Now;
+        public DateTime Date { get; set; }
 
 
         [ForeignKey(nameof(OperationId))]

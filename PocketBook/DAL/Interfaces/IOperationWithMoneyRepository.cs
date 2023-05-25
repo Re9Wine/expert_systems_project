@@ -2,8 +2,10 @@
 
 namespace DAL.Interfaces
 {
-    public interface IOperationWithMoneyRepository : IBaseRepository<OperationWithMoney>
+    public interface IOperationWithMoneyRepository
     {
-        Task<List<OperationWithMoney>> GetFiveLatestConsumption();
+        Task<OperationWithMoney?> GetById(Guid id);
+        Task<bool> Create(OperationWithMoney entity);
+        Task<bool> Delete(OperationWithMoney entity);
     }
 }
