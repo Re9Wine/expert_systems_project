@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DAL", "DAL\DAL.csproj", "{4
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Service\Service.csproj", "{EE88935F-C37D-4258-AB62-6A596B5F47FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{013EA066-7A5D-467D-A2DF-649659D95E11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{EE88935F-C37D-4258-AB62-6A596B5F47FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE88935F-C37D-4258-AB62-6A596B5F47FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE88935F-C37D-4258-AB62-6A596B5F47FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{013EA066-7A5D-467D-A2DF-649659D95E11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{013EA066-7A5D-467D-A2DF-649659D95E11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{013EA066-7A5D-467D-A2DF-649659D95E11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{013EA066-7A5D-467D-A2DF-649659D95E11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
