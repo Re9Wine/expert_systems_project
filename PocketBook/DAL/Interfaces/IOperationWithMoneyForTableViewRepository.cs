@@ -5,6 +5,6 @@ namespace DAL.Interfaces
     public interface IOperationWithMoneyForTableViewRepository
     {
         Task<List<OperationWithMoneyForTableView>> GetFiveLatestConsumption();
-        Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumption(DateTime date);
+        Task<List<OperationWithMoneyForTableView>> GetConsumptionForPeriod(DateTime date);
     }
 }

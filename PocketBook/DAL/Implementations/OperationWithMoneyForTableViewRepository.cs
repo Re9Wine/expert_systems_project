@@ -19,7 +19,7 @@ namespace DAL.Implementations
             return _context.OperationWithMoneyForTableViews.Where(x => x.Type == Constant.Consumption).OrderBy(x => x.Date).Take(5).ToListAsync();
         }
 
-        public Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumption(DateTime date)
+        public Task<List<OperationWithMoneyForTableView>> GetConsumptionForPeriod(DateTime date)
         {
             return _context.OperationWithMoneyForTableViews.Where(x => x.Date >= date && x.Type == Constant.Consumption).ToListAsync();
         }

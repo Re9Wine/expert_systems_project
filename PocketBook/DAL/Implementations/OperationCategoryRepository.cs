@@ -47,6 +47,11 @@ namespace DAL.Implementations
             return _context.OperationCategories.FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public Task<OperationCategory?> GetByName(string name)
+        {
+            return _context.OperationCategories.FirstOrDefaultAsync(x => x.Name == name);
+        }
+
         public Task<List<OperationCategory>> GetByType(string type)
         {
             return _context.OperationCategories.Where(x => x.Type == type).ToListAsync();

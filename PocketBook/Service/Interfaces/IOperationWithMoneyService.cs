@@ -1,5 +1,4 @@
-﻿using Domain.Entity;
-using Domain.View;
+﻿using Domain.View;
 
 namespace Service.Interfaces
 {
@@ -7,7 +6,8 @@ namespace Service.Interfaces
     {
         Task<List<OperationWithMoneyForTableView>> GetFiveLatesConsumption();
         Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumption();
-        Task<bool> Create(OperationWithMoney operationWithMoney);
+        Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumptionGroupByDay();
+        Task<bool> Create(OperationWithMoneyForTableView operationWithMoneyForTableView);
         Task<bool> Delete(Guid id);
     }
 }

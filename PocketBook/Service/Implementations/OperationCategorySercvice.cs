@@ -40,19 +40,33 @@ namespace Service.Implementations
             return _repository.GetAll();
         }
 
-        public Task<OperationCategory?> GetById(Guid id)
+        public Task<OperationCategory?> GetByName(string name)
         {
-            return _repository.GetById(id);
+            return _repository.GetByName(name);
         }
 
-        public Task<bool> Update(OperationCategory operationCategory)
+        public Task<List<OperationCategory>> GetByType(string type)
+        {
+            return _repository.GetByType(type);
+        }
+
+        public async Task<bool> Update(OperationCategory operationCategory)
         {
             if (operationCategory == null)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
-            return _repository.Update(operationCategory);
+            var updatedCategory = await _repository.GetByName(operationCategory.Name);
+
+            if (updatedCategory == null)
+            {
+                return false;
+            }
+
+            updatedCategory.Limit = operationCategory.Limit;
+
+            return await _repository.Update(updatedCategory);
         }
     }
 }

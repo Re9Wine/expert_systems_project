@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Domain;
+using Domain.Entity;
+using Domain.View;
+using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
+using System.Text.Json;
 
 namespace webapi.Controllers
 {
@@ -40,6 +44,33 @@ namespace webapi.Controllers
             }
 
             return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("WeeklyConsumptionGroupByDay")]
+        public async Task<IActionResult> GetWeeklyConsumptionGropByDay()
+        {
+            var result = await _service.GetWeeklyConsumptionGroupByDay();
+
+            if(result == null)
+            {
+                return NoContent() ;
+            }
+
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post(object formData)
+        {
+            var operationWithMoneyFormData = JsonSerializer.Deserialize<OperationWithMoneyForTableView>((JsonElement) formData);
+
+            if(operationWithMoneyFormData == null)
+            {
+                return BadRequest();
+            }
+
+            return await _service.Create(operationWithMoneyFormData) ? Ok() : BadRequest();
         }
     }
 }
