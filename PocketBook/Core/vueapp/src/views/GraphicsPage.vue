@@ -12,6 +12,7 @@
                 </div>
                 <div class="doughnut-chart">
                     <Doughnut
+                    v-if="loaded"
                     id="my-chart-id"
                     :options="chartOptions"
                     :data="DoughnutData"
@@ -60,29 +61,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td data-label="#">1</td>
-                        <td data-label="Дата">04/01/2016</td>
-                        <td data-label="Категория">Еда</td>
-                        <td data-label="Сумма">$1,190</td>
-                    </tr>
-                    <tr>
-                        <td scope="row" data-label="#">2</td>
-                        <td data-label="Дата">03/01/2016</td>
-                        <td data-label="Категория">Транспорт</td>
-                        <td data-label="Сумма">$2,443</td>
-                    </tr>
-                    <tr>
-                        <td scope="row" data-label="#">3</td>
-                        <td data-label="Дата">03/01/2016</td>
-                        <td data-label="Категория">Развлечения</td>
-                        <td data-label="Сумма">$1,181</td>
-                    </tr>
-                    <tr>
-                        <td scope="row" data-label="#">4</td>
-                        <td data-label="Дата">02/01/2016</td>
-                        <td data-label="Категория">Еда</td>
-                        <td data-label="Сумма">$842</td>
+                    <tr v-for="(item, index) in table.date" :key="index">
+                        <td data-label="#">{{ index + 1}}</td>
+                        <td data-label="Дата">{{table.date[index]}}</td>
+                        <td data-label="Категория">{{table.category[index]}}</td>
+                        <td data-label="Сумма">{{table.value[index]}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -91,38 +74,9 @@
     </main>
 </template>
 
-<script>
-// import Chart from 'chart.js/auto';
 
-// export default {
-//   name: 'myChart',
-  
-//   mounted () { 
-//         // const ctx = getElementById('myChart');
-//         let ctx = this.$refs.chart;
-//         this.chart = new Chart(ctx, {
-//             type: 'bar',
-//             data: {
-//                 labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-//                 datasets: [{
-//                     label: '# of Votes',
-//                     data: [12, 19, 3, 5, 2, 3],
-//                     borderWidth: 1
-//                 }]
-//             },
-//             options: {
-//                 responsive: true,
-//                 maintainAspectRatio: false,
-//                 scales: {
-//                     y: {
-//                         beginAtZero: true
-//                     }
-//                 }
-//             }
-//         });
-//         myChart;
-//     },
-// }
+<script>
+
 import { Doughnut,Bar,Line } from 'vue-chartjs'
 
 
@@ -156,25 +110,31 @@ export default {
 //     // }
 //   },
   data() {
-    return {
-        DoughnutData: {
-        labels: [ 'Развлечения', 'Еда', 'Транспорт' ],
-        datasets: [ 
-            { 
-                data: [40, 20, 12],
-                backgroundColor: 
-                [
-                    'rgba(187, 134, 252, 1)',
-                    'rgba(187, 134, 252, 0.66)',
-                    'rgba(187, 134, 252, 0.33)'
-                ],
-                borderWidth:0,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            },
-        ],
-      },
+      return {
+        loaded: false,
+        table: {
+            date:[],
+            category:[],
+            value:[],
+        },
+    //     DoughnutData: {
+    //     // labels: [ 'Развлечения', 'Еда', 'Транспорт' ],
+    //     // datasets: [ 
+    //     //    { 
+    //     //        data: [40, 20, 12],
+    //     //        backgroundColor: 
+    //     //        [
+    //     //            'rgba(187, 134, 252, 1)',
+    //     //            'rgba(187, 134, 252, 0.66)',
+    //     //            'rgba(187, 134, 252, 0.33)'
+    //     //        ],
+    //     //        borderWidth:0,
+    //     //        fill: false,
+    //     //        borderColor: 'rgb(75, 192, 192)',
+    //     //        tension: 0.1
+    //     //    },
+    //     // ],
+    //   },
       BarData: {
         labels: [ 'Развлечения', 'Еда', 'Транспорт' ],
         datasets: [ 
@@ -193,47 +153,67 @@ export default {
             },
         ],
       },
-    //   LineData: {
-    //     labels: ["week 1", "week 2", "week 3", "week 4", "week 5", "week 6", "week 7", "week 8", "week 9", "week 10"],
-    //     datasets: [
-    //       {
-    //         data: [86, 114, 106, 106, 107, 111, 133, 221, 783, 2478],
-    //         label: "Africa",
-    //         borderColor: "#3e95cd",
-    //         backgroundColor:"#3e95cd",
-    //       },
-    //       {
-    //         data: [282, 350, 411, 502, 635, 809, 947, 1402, 3700, 5267],
-    //         label: "Asia",
-    //         borderColor: "#8e5ea2",
-    //         backgroundColor: "#8e5ea2",
-    //       },
-    //       {
-    //         data: [168, 170, 178, 190, 203, 276, 408, 547, 675, 734],
-    //         label: "Europe",
-    //         borderColor: "#3cba9f",
-    //         backgroundColor:"#3cba9f",
-    //       },
-    //       {
-    //         data: [40, 20, 10, 16, 24, 38, 74, 167, 508, 784],
-    //         label: "Latin America",
-    //         borderColor: "#e8c3b9",
-    //         backgroundColor:"#e8c3b9",
-    //       },
-    //       {
-    //         data: [6, 3, 2, 2, 7, 26, 82, 172, 312, 433],
-    //         label: "North America",
-    //         borderColor: "#c45850",
-    //         backgroundColor: "#c45850",
-    //       }
-    //     ]
-    //   },
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
       }
     }
   },
+  methods: {
+    formatDate(date) {
+        // Здесь можно использовать библиотеки для форматирования даты, например, moment.js
+        return moment(date).format('YYYY-MM-DD'); // Форматирование даты в нужный формат
+    }
+},
+  mounted() {
+        this.loaded = false;
+        this.loaded2 = false;
+        fetch('OperationWithMoney/WeeklyConsumption', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(response => {
+            this.DoughnutData = {
+                labels: response.map((responseData)=>responseData.category),
+                datasets: [{
+                    backgroundColor: [
+                        'rgba(187, 134, 252, 1)',
+                        'rgba(187, 134, 252, 0.77)',
+                        'rgba(187, 134, 252, 0.55)',
+                        'rgba(187, 134, 252, 0.33)',
+                        'rgba(187, 134, 252, 0.11)'
+                    ],
+                    borderWidth: 0,
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    data: response.map((responseData)=>responseData.value),
+                    tension: 0.1
+                },],
+            }
+            this.loaded = true
+        }),
+        fetch('OperationWithMoney/FiveLatestConsumption', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(response =>{
+            this.table={
+                date:response.map((responseData)=>responseData.date),
+                category:response.map((responseData)=>responseData.category),
+                value:response.map((responseData)=>responseData.value),
+            }
+            // var nameLengths = response.map(function(name) {
+            //     return name.category;
+            // });
+            console.log(this.table.date);
+        })
+   }
   
 }
 

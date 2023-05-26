@@ -25,7 +25,7 @@ module.exports = {
         },
         //TODO proxy - подключение к контроллерам
         proxy: {
-            '^/values': {
+            '^/OperationWithMoney': {
                 target: 'https://localhost:7137/',
             }
         },

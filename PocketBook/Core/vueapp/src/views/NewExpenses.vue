@@ -15,7 +15,7 @@
 	            <label for="radio-2">Рассходы</label>
             </div>
             <div class="select">
-                <select v-model="formData.addData.Name" name="select">
+                <select v-model="formData.addData.Category" name="select">
                     <option disabled>Выберите категорию</option>
                     <option value="value1">Еда</option>
                     <option value="value2">Развлечения</option>
@@ -43,7 +43,7 @@
                 formData: {
                     TypeOperation: '',
                     addData: {
-                        Name: '',
+                        Category: '',
                         Value: '',
                         Description: ''
                     },
@@ -53,18 +53,18 @@
         methods: {
             async handleSubmit() {
                 try {
-                    const response = await fetch('values', {
+                    const response = await fetch('OperationWithMoney', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(this.formData)
+                        body: JSON.stringify(this.formData.addData)
                     });
                     if (response.ok) {
                         console.log('Data sent successfully');
                         console.log(this.formData);
                         console.log(this.formData.addData);
-                        this.formData.addData.Name = '';
+                        this.formData.addData.Category = '';
                         this.formData.addData.Limit = '';
                         this.formData.addData.Value = '';
                         this.formData.addData.Description = '';
