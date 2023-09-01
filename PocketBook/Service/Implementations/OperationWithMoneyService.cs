@@ -1,145 +1,80 @@
 ﻿using DAL.Interfaces;
-using Domain.Entity;
-using Domain.View;
+using Domain.DatabaseEntity;
+using Domain.ViewEntity;
 using Service.Interfaces;
 
 namespace Service.Implementations
 {
     public class OperationWithMoneyService : IOperationWithMoneyService
     {
-        private readonly IOperationWithMoneyRepository _operationWithMoneyRepository;
-        private readonly IOperationWithMoneyForTableViewRepository _operationWithMoneyForTableViewRepository;
-        private readonly IOperationCategoryRepository _operationCategoryRepository;
+        private readonly IOperationWithMoneyRepository _repository;
 
-        public OperationWithMoneyService(
-            IOperationWithMoneyRepository operationWithMoneyRepository,
-            IOperationWithMoneyForTableViewRepository operationWithMoneyForTableViewRepository,
-            IOperationCategoryRepository operationCategoryRepository)
+        public OperationWithMoneyService(IOperationWithMoneyRepository repository)
         {
-            _operationWithMoneyRepository = operationWithMoneyRepository;
-            _operationWithMoneyForTableViewRepository = operationWithMoneyForTableViewRepository;
-            _operationCategoryRepository = operationCategoryRepository;
+            _repository = repository;
         }
 
-        public async Task<bool> Create(OperationWithMoneyForTableView operationWithMoneyForTableView)
+        public async Task<bool> Create(OperationWithMoney operationWithMoney)
         {
-            if (operationWithMoneyForTableView == null || operationWithMoneyForTableView.Value == 0)
+            if(operationWithMoney == null)
             {
                 return false;
             }
 
-            var operationCategory = await _operationCategoryRepository.GetByName(operationWithMoneyForTableView.Category);
-
-            if(operationCategory == null)
-            {
-                return false;
-            }
-
-            var operationWithMoney = new OperationWithMoney()
-            {
-                OperationId = operationCategory.Id,
-                Value = operationWithMoneyForTableView.Value,
-                Description = operationWithMoneyForTableView.Description,
-            };
-
-            return await _operationWithMoneyRepository.Create(operationWithMoney);
+            return await _repository.Create(operationWithMoney);
         }
 
-        public async Task<bool> Delete(Guid id)
+        public async Task<List<OperationWithMoneyView>> GetFiveLates(bool isConsumption)
         {
-            var operationWithMoney = await _operationWithMoneyRepository.GetById(id);
-
-            if (operationWithMoney == null)
-            {
-                return false;
-            }
-
-            return await _operationWithMoneyRepository.Delete(operationWithMoney);
+            return await _repository.GetFiveLatest(isConsumption);
         }
 
-        public Task<List<OperationWithMoneyForTableView>> GetFiveLatesConsumption()
-        {
-            return _operationWithMoneyForTableViewRepository.GetFiveLatestConsumption();
-        }
-
-        public async Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumption()
+        public async Task<List<OperationCategoryView>> GetWeekly(bool isConsumption)
         {
             DateTime dateNow = DateTime.Now;
+            DateTime dateWeek = dateNow.AddDays(-1 * (int)dateNow.DayOfWeek);
 
-            int dayOfWeek = (int)dateNow.DayOfWeek;
+            var operationsPerWeek = await _repository.GetForPeriod(isConsumption, dateWeek);
+            var operationsPerWeekView = new List<OperationCategoryView>();
 
-            if (dayOfWeek == 0)
+            operationsPerWeek.ForEach(operation =>
             {
-                dayOfWeek = 7;
-            }
-
-            DateTime dateWeek = dateNow.AddDays(-1 * dayOfWeek);
-
-            var operationsPerWeek = await _operationWithMoneyForTableViewRepository.GetConsumptionForPeriod(dateWeek);
-            var operationsPerWeekByCategory = new List<OperationWithMoneyForTableView>();
-
-            for (int i = 0; i < operationsPerWeek.Count(); i++)
-            {
-                if (operationsPerWeekByCategory.Any(x => x.Category == operationsPerWeek[i].Category))
+                if(operationsPerWeekView.FirstOrDefault(x => x.Name == operation.CategoryName)
+                    is not { } operationPerWeekView)
                 {
-                    var buffer = operationsPerWeekByCategory.FirstOrDefault(x => x.Category == operationsPerWeek[i].Category);
-
-                    if(buffer != null)
-                    {
-                        buffer.Value += operationsPerWeek[i].Value;
-                    }
+                    operationsPerWeekView.Add(new OperationCategoryView(operation.CategoryName, operation.Value));
                 }
                 else
                 {
-                    operationsPerWeekByCategory.Add(new OperationWithMoneyForTableView()
-                    {
-                        Category = operationsPerWeek[i].Category,
-                        Value = operationsPerWeek[i].Value,
-                    });
+                    operationPerWeekView.Outlay += operation.Value;
                 }
-            }
+            });
 
-            return operationsPerWeekByCategory;
+            return operationsPerWeekView;
         }
 
-        public async Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumptionGroupByDay()
+        public async Task<List<OperationCategoryView>> GetWeeklyGroupByDay(bool isConsumption)
         {
             DateTime dateNow = DateTime.Now;
+            DateTime dateWeek = dateNow.AddDays(-1 * (int)dateNow.DayOfWeek);
 
-            int dayOfWeek = (int)dateNow.DayOfWeek;
+            var operationsPerWeek = await _repository.GetForPeriod(isConsumption, dateWeek);
+            var operationsPerWeekView = new List<OperationCategoryView>();
 
-            if(dayOfWeek == 0)
+            operationsPerWeek.ForEach(operation =>
             {
-                dayOfWeek = 7;
-            }
-
-            DateTime dateWeek = dateNow.AddDays(-1 * dayOfWeek);
-
-            var operationsPerWeek = await _operationWithMoneyForTableViewRepository.GetConsumptionForPeriod(dateWeek);
-            var operationsPerWeekGropByDay = new List<OperationWithMoneyForTableView>();
-
-            for (int i = 0; i < operationsPerWeek.Count; i++)
-            {
-                if (operationsPerWeekGropByDay.Any(x => x.Date.Day == operationsPerWeek[i].Date.Day))
+                if (operationsPerWeekView.FirstOrDefault(x => x.Date.DayOfWeek == operation.Date.DayOfWeek)
+                    is not { } operationPerWeekView)
                 {
-                    var buffer = operationsPerWeekGropByDay.FirstOrDefault(x => x.Date.Day == operationsPerWeek[i].Date.Day);
-
-                    if (buffer != null)
-                    {
-                        buffer.Value += operationsPerWeek[i].Value;
-                    }
+                    operationsPerWeekView.Add(new OperationCategoryView(operation.Date, operation.Value));
                 }
                 else
                 {
-                    operationsPerWeekGropByDay.Add(new OperationWithMoneyForTableView()
-                    {
-                        Date = operationsPerWeek[i].Date,
-                        Value = operationsPerWeek[i].Value,
-                    });
+                    operationPerWeekView.Outlay += operation.Value;
                 }
-            }
+            });
 
-            return operationsPerWeekGropByDay.OrderByDescending(x => x.Date).ToList();
+            return operationsPerWeekView.OrderByDescending(x => x.Date.DayOfWeek).ToList();
         }
     }
 }

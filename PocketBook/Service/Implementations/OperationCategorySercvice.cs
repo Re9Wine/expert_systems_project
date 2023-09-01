@@ -1,5 +1,5 @@
 ﻿using DAL.Interfaces;
-using Domain.Entity;
+using Domain.DatabaseEntity;
 using Service.Interfaces;
 
 namespace Service.Implementations
@@ -13,41 +13,19 @@ namespace Service.Implementations
             _repository = repository;
         }
 
-        public Task<bool> Create(OperationCategory operationCategory)
+        public async Task<bool> Create(OperationCategory operationCategory)
         {
-            if (operationCategory == null)
-            {
-                return Task.FromResult(false);
-            }
-
-            return _repository.Create(operationCategory);
-        }
-
-        public async Task<bool> Delete(Guid id)
-        {
-            var operationCategory = await _repository.GetById(id);
-
             if (operationCategory == null)
             {
                 return false;
             }
 
-            return await _repository.Delete(operationCategory);
+            return await _repository.Create(operationCategory);
         }
 
-        public Task<List<OperationCategory>> GetAll()
+        public async Task<List<OperationCategory>> GetByType(bool isConsumption)
         {
-            return _repository.GetAll();
-        }
-
-        public Task<OperationCategory?> GetByName(string name)
-        {
-            return _repository.GetByName(name);
-        }
-
-        public Task<List<OperationCategory>> GetByType(string type)
-        {
-            return _repository.GetByType(type);
+            return await _repository.GetByType(isConsumption);
         }
 
         public async Task<bool> Update(OperationCategory operationCategory)
@@ -57,14 +35,12 @@ namespace Service.Implementations
                 return false;
             }
 
-            var updatedCategory = await _repository.GetByName(operationCategory.Name);
+            var updatedCategory = await _repository.GetById(operationCategory.Id);
 
             if (updatedCategory == null)
             {
                 return false;
             }
-
-            updatedCategory.Limit = operationCategory.Limit;
 
             return await _repository.Update(updatedCategory);
         }

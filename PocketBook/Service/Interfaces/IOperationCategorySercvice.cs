@@ -1,14 +1,11 @@
-﻿using Domain.Entity;
+﻿using Domain.DatabaseEntity;
 
 namespace Service.Interfaces
 {
     public interface IOperationCategorySercvice
     {
-        Task<OperationCategory?> GetByName(string name);
-        Task<List<OperationCategory>> GetAll();
-        Task<List<OperationCategory>> GetByType(string type);
+        Task<List<OperationCategory>> GetByType(bool isConsumption);
         Task<bool> Create(OperationCategory operationCategory);
         Task<bool> Update(OperationCategory operationCategory);
-        Task<bool> Delete(Guid id);
     }
 }

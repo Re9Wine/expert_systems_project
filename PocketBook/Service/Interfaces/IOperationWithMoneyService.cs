@@ -1,13 +1,13 @@
-﻿using Domain.View;
+﻿using Domain.DatabaseEntity;
+using Domain.ViewEntity;
 
 namespace Service.Interfaces
 {
     public interface IOperationWithMoneyService
     {
-        Task<List<OperationWithMoneyForTableView>> GetFiveLatesConsumption();
-        Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumption();
-        Task<List<OperationWithMoneyForTableView>> GetWeeklyConsumptionGroupByDay();
-        Task<bool> Create(OperationWithMoneyForTableView operationWithMoneyForTableView);
-        Task<bool> Delete(Guid id);
+        Task<List<OperationWithMoneyView>> GetFiveLates(bool isConsumption);
+        Task<List<OperationCategoryView>> GetWeekly(bool isConsumption);
+        Task<List<OperationCategoryView>> GetWeeklyGroupByDay(bool isConsumption);
+        Task<bool> Create(OperationWithMoney operationWithMoney);
     }
 }
