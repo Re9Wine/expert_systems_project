@@ -1,6 +1,4 @@
-﻿using Domain;
-using Domain.Entity;
-using Domain.View;
+﻿using Domain.DatabaseEntity;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 using System.Text.Json;
@@ -19,12 +17,12 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        [Route("FiveLatestConsumption")]
-        public async Task<IActionResult> GetFiveLatestConsumptionAsync()
+        [Route("FiveLatest")]
+        public async Task<IActionResult> GetFiveLatestAsync(bool isConsumption)
         {
-            var result = await _service.GetFiveLatesConsumption();
+            var result = await _service.GetFiveLates(isConsumption);
 
-            if(result == null || result.Count == 0)
+            if (result == null || result.Count == 0)
             {
                 return NoContent();
             }
@@ -33,12 +31,12 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        [Route("WeeklyConsumption")]
-        public async Task<IActionResult> GetWeeklyConsumptionAsync()
+        [Route("Weekly")]
+        public async Task<IActionResult> GetWeeklyConsumptionAsync(bool isConsumption)
         {
-            var result = await _service.GetWeeklyConsumption();
+            var result = await _service.GetWeekly(isConsumption);
 
-            if(result == null || result.Count == 0)
+            if (result == null || result.Count == 0)
             {
                 return NoContent();
             }
@@ -47,14 +45,14 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        [Route("WeeklyConsumptionGroupByDay")]
-        public async Task<IActionResult> GetWeeklyConsumptionGropByDay()
+        [Route("WeeklyGroupByDay")]
+        public async Task<IActionResult> GetWeeklyConsumptionGropByDay(bool isConsumption)
         {
-            var result = await _service.GetWeeklyConsumptionGroupByDay();
+            var result = await _service.GetWeeklyGroupByDay(isConsumption);
 
-            if(result == null)
+            if (result == null)
             {
-                return NoContent() ;
+                return NoContent();
             }
 
             return Ok(result);
@@ -63,9 +61,9 @@ namespace webapi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(object formData)
         {
-            var operationWithMoneyFormData = JsonSerializer.Deserialize<OperationWithMoneyForTableView>((JsonElement) formData);
+            var operationWithMoneyFormData = JsonSerializer.Deserialize<OperationWithMoney>((JsonElement)formData);
 
-            if(operationWithMoneyFormData == null)
+            if (operationWithMoneyFormData == null)
             {
                 return BadRequest();
             }

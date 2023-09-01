@@ -1,5 +1,4 @@
-﻿using Domain;
-using Domain.Entity;
+﻿using Domain.DatabaseEntity;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 using System.Text.Json;
@@ -18,11 +17,11 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetByType(string type)
+        public async Task<IActionResult> GetByType(bool isConsumption)
         {
-            var result = await _sercvice.GetByType(type);
+            var result = await _sercvice.GetByType(isConsumption);
 
-            if(result == null || result.Count == 0)
+            if (result == null || result.Count == 0)
             {
                 return NotFound();
             }
@@ -40,8 +39,6 @@ namespace webapi.Controllers
                 return BadRequest();
             }
 
-            operationCategory.Type = Constant.Consumption;
-
             return await _sercvice.Create(operationCategory) ? Ok() : BadRequest();
         }
 
@@ -50,7 +47,7 @@ namespace webapi.Controllers
         {
             var operationCategory = JsonSerializer.Deserialize<OperationCategory>((JsonElement)formData);
 
-            if(operationCategory == null)
+            if (operationCategory == null)
             {
                 return BadRequest();
             }
