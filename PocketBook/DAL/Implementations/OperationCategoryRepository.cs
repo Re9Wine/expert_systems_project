@@ -1,5 +1,5 @@
 ﻿using DAL.Interfaces;
-using Domain.Entity;
+using Domain.DatabaseEntity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Implementations
@@ -13,60 +13,38 @@ namespace DAL.Implementations
             _context = context;
         }
 
-        public Task<bool> Create(OperationCategory entity)
+        public async Task<bool> Create(OperationCategory entity)
         {
             if (entity == null)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
             _context.OperationCategories.Add(entity);
 
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
+            return await _context.SaveChangesAsync() != 0;
         }
 
-        public Task<bool> Delete(OperationCategory entity)
+        public async Task<OperationCategory?> GetById(Guid id)
+        {
+            return await _context.OperationCategories.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<List<OperationCategory>> GetByType(bool isConsumption)
+        {
+            return await _context.OperationCategories.Where(x => x.IsConsumption == isConsumption).ToListAsync();
+        }
+
+        public async Task<bool> Update(OperationCategory entity)
         {
             if (entity == null)
             {
-                return Task.FromResult(false);
-            }
-
-            _context.OperationCategories.Remove(entity);
-
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
-        }
-
-        public Task<List<OperationCategory>> GetAll()
-        {
-            return _context.OperationCategories.ToListAsync();
-        }
-
-        public Task<OperationCategory?> GetById(Guid id)
-        {
-            return _context.OperationCategories.FirstOrDefaultAsync(x => x.Id == id);
-        }
-
-        public Task<OperationCategory?> GetByName(string name)
-        {
-            return _context.OperationCategories.FirstOrDefaultAsync(x => x.Name == name);
-        }
-
-        public Task<List<OperationCategory>> GetByType(string type)
-        {
-            return _context.OperationCategories.Where(x => x.Type == type).ToListAsync();
-        }
-
-        public Task<bool> Update(OperationCategory entity)
-        {
-            if (entity == null)
-            {
-                return Task.FromResult(false);
+                return false;
             }
 
             _context.OperationCategories.Update(entity);
 
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
+            return await _context.SaveChangesAsync() != 0;
         }
     }
 }

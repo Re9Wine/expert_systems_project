@@ -1,5 +1,6 @@
 ﻿using DAL.Interfaces;
-using Domain.Entity;
+using Domain.DatabaseEntity;
+using Domain.ViewEntity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Implementations
@@ -13,33 +14,53 @@ namespace DAL.Implementations
             _context = context;
         }
 
-        public Task<bool> Create(OperationWithMoney entity)
+        public async Task<bool> Create(OperationWithMoney entity)
         {
             if (entity == null)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
             _context.OperationWithMoneys.Add(entity);
 
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
+            return await _context.SaveChangesAsync() != 0;
         }
 
-        public Task<bool> Delete(OperationWithMoney entity)
+        public async Task<bool> Delete(OperationWithMoney entity)
         {
             if (entity == null)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
             _context.OperationWithMoneys.Remove(entity);
 
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
+            return await _context.SaveChangesAsync() != 0;
         }
 
-        public Task<OperationWithMoney?> GetById(Guid id)
+        public async Task<OperationWithMoney?> GetById(Guid id)
         {
-            return _context.OperationWithMoneys.FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.OperationWithMoneys.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<List<OperationWithMoneyView>> GetFiveLatest(bool isConsumption)
+        {
+            return await _context.OperationWithMoneys
+                .Include(x => x.OperationCategoryNavigation)
+                .Where(x => x.OperationCategoryNavigation.IsConsumption == isConsumption)
+                .OrderBy(x => x.Date)
+                .Take(5)
+                .Select(x => new OperationWithMoneyView(x))
+                .ToListAsync();
+        }
+
+        public async Task<List<OperationWithMoneyView>> GetForPeriod(bool isConsumption, DateTime date)
+        {
+            return await _context.OperationWithMoneys
+                .Include(x => x.OperationCategoryNavigation)
+                .Where(x => x.OperationCategoryNavigation.IsConsumption == isConsumption && x.Date >= date)
+                .Select(x => new OperationWithMoneyView(x))
+                .ToListAsync();
         }
     }
 }
