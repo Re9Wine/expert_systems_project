@@ -1,5 +1,4 @@
-﻿using Domain.Entity;
-using Domain.View;
+﻿using Domain.DatabaseEntity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL
@@ -18,7 +17,6 @@ namespace DAL
 
         public virtual DbSet<OperationCategory> OperationCategories => Set<OperationCategory>();
         public virtual DbSet<OperationWithMoney> OperationWithMoneys => Set<OperationWithMoney>();
-        public virtual DbSet<OperationWithMoneyForTableView> OperationWithMoneyForTableViews => Set<OperationWithMoneyForTableView>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -33,21 +31,6 @@ namespace DAL
             modelBuilder.Entity<OperationCategory>(entity =>
             {
                 entity.HasIndex(e => e.Name, "UQ__name_CC").IsUnique();
-            });
-
-            modelBuilder.Entity<OperationWithMoneyForTableView>(entity =>
-            {
-                modelBuilder.Entity<OperationWithMoneyForTableView>(entity =>
-                {
-                    entity
-                        .HasNoKey()
-                        .ToView("OperationWithMoneyForTableView");
-
-                    entity.Property(e => e.Category).HasMaxLength(100);
-                    entity.Property(e => e.Date).HasColumnType("timestamp without time zone");
-                    entity.Property(e => e.Description).HasMaxLength(100);
-                    entity.Property(e => e.Value).HasPrecision(10, 2);
-                });
             });
         }
     }
