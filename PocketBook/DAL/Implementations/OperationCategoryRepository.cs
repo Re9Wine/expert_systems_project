@@ -13,9 +13,9 @@ namespace DAL.Implementations
             _context = context;
         }
 
-        public async Task<bool> Create(OperationCategory entity)
+        public async Task<bool> CreateAsync(OperationCategory entity)
         {
-            if (entity == null)
+            if(entity == null)
             {
                 return false;
             }
@@ -25,17 +25,29 @@ namespace DAL.Implementations
             return await _context.SaveChangesAsync() != 0;
         }
 
-        public async Task<OperationCategory?> GetById(Guid id)
+        public async Task<List<OperationCategory>> GetAllAsync()
+        {
+            return await _context.OperationCategories.ToListAsync();
+        }
+
+        public async Task<OperationCategory?> GetByIdAsync(Guid id)
         {
             return await _context.OperationCategories.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<List<OperationCategory>> GetByType(bool isConsumption)
+        public async Task<List<OperationCategory>> GetPerPeriodWithOperationsAsync
+            (bool isConusption, DateTime periodBeginnig, DateTime periodEnd)
         {
-            return await _context.OperationCategories.Where(x => x.IsConsumption == isConsumption).ToListAsync();
+            return await _context.OperationCategories
+                .Include(x => x.OperationWithMoneys)
+                .Where(x => x.OperationWithMoneys
+                    .Where(y => y.IsConsumption == isConusption &&
+                                y.Date >= periodBeginnig &&
+                                y.Date <= periodEnd).Count() != 0)
+                .ToListAsync();
         }
 
-        public async Task<bool> Update(OperationCategory entity)
+        public async Task<bool> UpdateAsync(OperationCategory entity)
         {
             if (entity == null)
             {

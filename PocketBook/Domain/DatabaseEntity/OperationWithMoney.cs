@@ -8,9 +8,10 @@ namespace Domain.DatabaseEntity
     {
         public OperationWithMoney()
         {
-            var bufferDate = DateTime.Now;
+            var currentDate = DateTime.Now;
 
-            Date = new DateTime(bufferDate.Year, bufferDate.Month, bufferDate.Day, bufferDate.Hour, bufferDate.Minute, bufferDate.Second);
+            Date = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day,
+                currentDate.Hour, currentDate.Minute, currentDate.Second);
         }
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -19,8 +20,11 @@ namespace Domain.DatabaseEntity
         public Guid OperationId { get; set; }
 
         [Required]
+        public bool IsConsumption { get; set; }
+
+        [Required]
         [StringLength(100)]
-        public string Description { get; set; } = null!;
+        public required string Description { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10, 2)")]
@@ -28,7 +32,7 @@ namespace Domain.DatabaseEntity
 
         [Required]
         [Column(TypeName = "timestamp without time zone")]
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.Now;
 
 
         [ForeignKey(nameof(OperationId))]

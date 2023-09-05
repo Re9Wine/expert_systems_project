@@ -25,7 +25,6 @@ namespace DAL
                 optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=PocketBook;Username=postgres;Password=123");
             }
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<OperationCategory>(entity =>

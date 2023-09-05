@@ -17,17 +17,13 @@ namespace Domain.DatabaseEntity
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; } = null!;
-
-        [Required]
-        public bool IsConsumption { get; set; }
+        public required string Name { get; set; }
 
         [Required]
         public int Priority { get; set; }
 
-        [Required]
-        [DefaultValue(false)]
-        public bool IsChangeable { get; set; } = false;
+        [DefaultValue(true)]
+        public bool IsChangeable { get; set; } = true;
 
 
         public virtual ICollection<OperationWithMoney> OperationWithMoneys { get; set; }

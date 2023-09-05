@@ -4,9 +4,11 @@ namespace DAL.Interfaces
 {
     public interface IOperationCategoryRepository
     {
-        Task<OperationCategory?> GetById(Guid id);
-        Task<bool> Create(OperationCategory entity);
-        Task<bool> Update(OperationCategory entity);
-        Task<List<OperationCategory>> GetByType(bool isConsumption);
+        Task<OperationCategory?> GetByIdAsync(Guid id);
+        Task<List<OperationCategory>> GetAllAsync(); // TODO мб заменить на получение части
+        Task<bool> CreateAsync(OperationCategory entity);
+        Task<bool> UpdateAsync(OperationCategory entity);
+        Task<List<OperationCategory>> GetPerPeriodWithOperationsAsync
+            (bool isConusption, DateTime periodBeginnig, DateTime periodEnd);
     }
 }

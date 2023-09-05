@@ -1,5 +1,6 @@
 ﻿using DAL.Interfaces;
 using Domain.DatabaseEntity;
+using Domain.ViewEntity;
 using Service.Interfaces;
 
 namespace Service.Implementations
@@ -13,36 +14,65 @@ namespace Service.Implementations
             _repository = repository;
         }
 
-        public async Task<bool> Create(OperationCategory operationCategory)
+        public async Task<bool> CreateAsync(OperationCategory entity)
         {
-            if (operationCategory == null)
-            {
-                return false;
-            }
-
-            return await _repository.Create(operationCategory);
+            return await _repository.CreateAsync(entity);
         }
 
-        public async Task<List<OperationCategory>> GetByType(bool isConsumption)
+        public async Task<List<OperationCategory>> GetAllAsync()
         {
-            return await _repository.GetByType(isConsumption);
+            return await _repository.GetAllAsync();
         }
 
-        public async Task<bool> Update(OperationCategory operationCategory)
+        public async Task<OperationCategory?> GetByIdAsync(Guid id)
         {
-            if (operationCategory == null)
+            return await _repository.GetByIdAsync(id);
+        }
+
+        public async Task<List<OperationCategoryView>> GetMonthlyAsync(bool isConusption, DateTime finalDate = default)
+        {
+            if (finalDate == default)
             {
-                return false;
+                finalDate = DateTime.Now;
             }
 
-            var updatedCategory = await _repository.GetById(operationCategory.Id);
+            finalDate = finalDate.Date;
+            DateTime monthBeginning = finalDate.AddDays(-1 * finalDate.Day);
 
-            if (updatedCategory == null)
+            return await GetPerPeriodAsync(isConusption, monthBeginning, finalDate);
+        }
+
+        public async Task<List<OperationCategoryView>> GetWeeklyAsync(bool isConusption, DateTime finalDate = default)
+        {
+            if (finalDate == default)
             {
-                return false;
+                finalDate = DateTime.Now;
             }
 
-            return await _repository.Update(updatedCategory);
+            finalDate = finalDate.Date;
+            DateTime weekBeginning = finalDate.AddDays(-1 * (int)finalDate.DayOfWeek);
+
+            return await GetPerPeriodAsync(isConusption, weekBeginning, finalDate);
+        }
+
+        public async Task<bool> UpdateAsync(OperationCategory entity)
+        {
+            return await _repository.UpdateAsync(entity);
+        }
+
+        private async Task<List<OperationCategoryView>> GetPerPeriodAsync
+            (bool isConusption, DateTime periodBeginnig, DateTime periodEnd)
+        {
+            var categoryOperationsPerPeriod = await _repository
+                .GetPerPeriodWithOperationsAsync(isConusption, periodBeginnig, periodEnd);
+
+            return categoryOperationsPerPeriod
+                .Select(categoryOperations => new OperationCategoryView()
+                {
+                    Category = categoryOperations.Name,
+                    Sum = categoryOperations.OperationWithMoneys.Select(x => x.Value).Sum()
+                })
+                .ToList();
         }
     }
 }

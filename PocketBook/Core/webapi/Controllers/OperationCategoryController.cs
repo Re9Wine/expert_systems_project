@@ -1,7 +1,7 @@
-﻿using Domain.DatabaseEntity;
+﻿using Domain;
+using Domain.DatabaseEntity;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
-using System.Text.Json;
 
 namespace webapi.Controllers
 {
@@ -16,43 +16,72 @@ namespace webapi.Controllers
             _sercvice = sercvice;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetByType(bool isConsumption)
+        [HttpPost]
+        public async Task<IActionResult> CreateAsync(object formData)
         {
-            var result = await _sercvice.GetByType(isConsumption);
+            var operationCategory = JsonSerializer<OperationCategory>.Deserialize(formData);
 
-            if (result == null || result.Count == 0)
+            if (operationCategory == null)
             {
-                return NotFound();
+                return BadRequest();
+            }
+
+            return await _sercvice.CreateAsync(operationCategory) ? Ok() : BadRequest();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateAsync(object formData)
+        {
+            var operationCategory = JsonSerializer<OperationCategory>.Deserialize(formData);
+
+            if (operationCategory == null)
+            {
+                return BadRequest();
+            }
+
+            return await _sercvice.UpdateAsync(operationCategory) ? Ok() : BadRequest();
+        }
+
+        [HttpGet]
+        [Route("GetWeekly")]
+        public async Task<IActionResult> GetWeeklyAsync(bool isConsumption, DateTime finalDate = default)
+        {
+            var result = await _sercvice.GetWeeklyAsync(isConsumption, finalDate);
+
+            if (result.Count == 0)
+            {
+                return NoContent();
             }
 
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Post(object formData)
+        [HttpGet]
+        [Route("GetMonthly")]
+        public async Task<IActionResult> GetMonthlyAsync(bool isConsumption, DateTime finalDate = default)
         {
-            var operationCategory = JsonSerializer.Deserialize<OperationCategory>((JsonElement)formData);
+            var result = await _sercvice.GetMonthlyAsync(isConsumption, finalDate);
 
-            if (operationCategory == null)
+            if (result.Count == 0)
             {
-                return BadRequest();
+                return NoContent();
             }
 
-            return await _sercvice.Create(operationCategory) ? Ok() : BadRequest();
+            return Ok(result);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Put(object formData)
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAllAsync()
         {
-            var operationCategory = JsonSerializer.Deserialize<OperationCategory>((JsonElement)formData);
+            var result = await _sercvice.GetAllAsync();
 
-            if (operationCategory == null)
+            if (result.Count == 0)
             {
-                return BadRequest();
+                return NoContent();
             }
 
-            return await _sercvice.Update(operationCategory) ? Ok() : BadRequest();
+            return Ok(result);
         }
     }
 }

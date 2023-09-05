@@ -13,7 +13,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(optionts => optionts.UseNpgs
 
 builder.Services.AddScoped<IOperationCategoryRepository, OperationCategoryRepository>();
 builder.Services.AddScoped<IOperationWithMoneyRepository, OperationWithMoneyRepository>();
-builder.Services.AddScoped<IOperationWithMoneyForTableViewRepository, OperationWithMoneyForTableViewRepository>();
 
 builder.Services.AddScoped<IOperationCategorySercvice, OperationCategorySercvice>();
 builder.Services.AddScoped<IOperationWithMoneyService, OperationWithMoneyService>();

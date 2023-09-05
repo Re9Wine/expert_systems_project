@@ -1,7 +1,7 @@
-﻿using Domain.DatabaseEntity;
+﻿using Domain;
+using Domain.DatabaseEntity;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
-using System.Text.Json;
 
 namespace webapi.Controllers
 {
@@ -17,12 +17,12 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        [Route("FiveLatest")]
-        public async Task<IActionResult> GetFiveLatestAsync(bool isConsumption)
+        [Route("GetWeeklyGroupByDay")]
+        public async Task<IActionResult> GetWeeklyGroupByDayAsync(bool isConsumption, DateTime finalDate = default)
         {
-            var result = await _service.GetFiveLates(isConsumption);
+            var result = await _service.GetWeeklyGroupByDayAsync(isConsumption, finalDate);
 
-            if (result == null || result.Count == 0)
+            if (result.Count == 0)
             {
                 return NoContent();
             }
@@ -31,12 +31,12 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        [Route("Weekly")]
-        public async Task<IActionResult> GetWeeklyConsumptionAsync(bool isConsumption)
+        [Route("GetMonthlyGroupByDay")]
+        public async Task<IActionResult> GetMonthlyGroupByDayAsync(bool isConsumption, DateTime finalDate = default)
         {
-            var result = await _service.GetWeekly(isConsumption);
+            var result = await _service.GetMonthlyGroupByDayAsync(isConsumption, finalDate);
 
-            if (result == null || result.Count == 0)
+            if(result.Count == 0)
             {
                 return NoContent();
             }
@@ -45,12 +45,12 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        [Route("WeeklyGroupByDay")]
-        public async Task<IActionResult> GetWeeklyConsumptionGropByDay(bool isConsumption)
+        [Route("GetRange")]
+        public async Task<IActionResult> GetRangeAsync(bool isConsumption, int amount = 5, int skip = 0)
         {
-            var result = await _service.GetWeeklyGroupByDay(isConsumption);
+            var result = await _service.GetRangeAsync(isConsumption, amount, skip);
 
-            if (result == null)
+            if(result.Count == 0)
             {
                 return NoContent();
             }
@@ -59,16 +59,22 @@ namespace webapi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(object formData)
+        public async Task<IActionResult> CreateAsync(object formData)
         {
-            var operationWithMoneyFormData = JsonSerializer.Deserialize<OperationWithMoney>((JsonElement)formData);
+            var operationWithMoney = JsonSerializer<OperationWithMoney>.Deserialize(formData);
 
-            if (operationWithMoneyFormData == null)
+            if (operationWithMoney == null)
             {
                 return BadRequest();
             }
 
-            return await _service.Create(operationWithMoneyFormData) ? Ok() : BadRequest();
+            return await _service.CreateAsync(operationWithMoney) ? Ok() : BadRequest();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> UpdateAsync(Guid operationWithMoneyId)
+        {
+            return await _service.DeleteAsync(operationWithMoneyId) ? Ok() : BadRequest();
         }
     }
 }

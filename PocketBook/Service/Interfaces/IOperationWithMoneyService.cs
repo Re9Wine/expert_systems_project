@@ -5,9 +5,10 @@ namespace Service.Interfaces
 {
     public interface IOperationWithMoneyService
     {
-        Task<List<OperationWithMoneyView>> GetFiveLates(bool isConsumption);
-        Task<List<OperationCategoryView>> GetWeekly(bool isConsumption);
-        Task<List<OperationCategoryView>> GetWeeklyGroupByDay(bool isConsumption);
-        Task<bool> Create(OperationWithMoney operationWithMoney);
+        Task<bool> CreateAsync(OperationWithMoney operation);
+        Task<bool> DeleteAsync(Guid id);
+        Task<List<OperationWithMoneyView>> GetRangeAsync(bool isConsumption, int amount, int skip = 0);
+        Task<List<OperationCategoryView>> GetWeeklyGroupByDayAsync(bool isConsumption, DateTime finalDate = default);
+        Task<List<OperationCategoryView>> GetMonthlyGroupByDayAsync(bool isConsumption, DateTime finalDate = default);
     }
 }
