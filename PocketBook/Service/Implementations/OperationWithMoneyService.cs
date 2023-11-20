@@ -139,7 +139,7 @@ namespace Service.Implementations
                 }
             }
 
-            return operationsPerWeekGropByDay.OrderByDescending(x => x.Date).ToList();
+            return operationsPerWeekGropByDay.OrderBy(x => x.Date).ToList();
         }
     }
 }

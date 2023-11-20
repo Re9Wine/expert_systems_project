@@ -16,7 +16,7 @@ namespace DAL.Implementations
 
         public Task<List<OperationWithMoneyForTableView>> GetFiveLatestConsumption()
         {
-            return _context.OperationWithMoneyForTableViews.Where(x => x.Type == Constant.Consumption).OrderBy(x => x.Date).Take(5).ToListAsync();
+            return _context.OperationWithMoneyForTableViews.Where(x => x.Type == Constant.Consumption).OrderByDescending(x => x.Date).Take(5).ToListAsync();
         }
 
         public Task<List<OperationWithMoneyForTableView>> GetConsumptionForPeriod(DateTime date)

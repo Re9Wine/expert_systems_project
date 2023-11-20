@@ -17,7 +17,7 @@ namespace webapi.Controllers
             _sercvice = sercvice;
         }
 
-        [HttpGet]
+        [HttpGet("Type")]
         public async Task<IActionResult> GetByType(string type)
         {
             var result = await _sercvice.GetByType(type);
@@ -56,6 +56,19 @@ namespace webapi.Controllers
             }
 
             return await _sercvice.Update(operationCategory) ? Ok() : BadRequest();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _sercvice.GetAll();
+
+            if(result == null)
+            {
+                return NoContent();
+            }
+
+            return Ok(result);
         }
     }
 }
