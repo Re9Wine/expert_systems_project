@@ -23,9 +23,12 @@ module.exports = {
             key: fs.readFileSync(keyFilePath),
             cert: fs.readFileSync(certFilePath),
         },
-        //TODO proxy - подключение к контроллерам
+        //TODO proxy - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         proxy: {
             '^/OperationWithMoney': {
+                target: 'https://localhost:7137/',
+            },
+            '^/OperationCategory': {
                 target: 'https://localhost:7137/',
             }
         },
