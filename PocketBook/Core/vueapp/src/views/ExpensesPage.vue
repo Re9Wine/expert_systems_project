@@ -37,9 +37,7 @@
                 <div class="select">
                     <select v-model="redactData.Name" name="select">
                         <option disabled>Выберите категорию</option>
-                        <option value="Еда">Еда</option>
-                        <option value="Развлечения">Развлечения</option>
-                        <option value="Транспорт">Транспорт</option>
+                        <option v-for="(item, index) in category" :key="index" :value="item">{{ item }}</option>
                     </select>
                 </div>
                 <div class="input-block">
@@ -64,6 +62,7 @@
     export default {
         data() {
             return {
+                category:[],
                 addData: {
                     Name: '',
                     Limit: ''
@@ -77,7 +76,7 @@
         methods: {
             async handleSubmit() {
                 try {
-                    const response = await fetch('values', {
+                    const response = await fetch('OperationCategory', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -97,8 +96,8 @@
             },
             async redactSubmit() {
                 try {
-                    const response = await fetch('values', {
-                        method: 'POST',
+                    const response = await fetch('OperationCategory', {
+                        method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
                         },
@@ -116,6 +115,22 @@
                     console.log('Error sending data', error);
                 }
             },
+        },
+        mounted(){
+            fetch('OperationCategory', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => response.json())
+            .then(response =>{
+                this.category=response.map((responseData)=>responseData.name)
+            // var nameLengths = response.map(function(name) {
+            //     return name.category;
+            // });
+                // console.log(this.table.date);
+            })
         }
     };
 

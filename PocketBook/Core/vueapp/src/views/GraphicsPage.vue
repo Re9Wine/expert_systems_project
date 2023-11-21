@@ -27,6 +27,7 @@
                 </div>
                 <div class="bar-chart">
                     <Bar 
+                        v-if="loaded2"
                         :style="BarStyle"
                         id="my-chart-id"
                         :options="chartOptions"
@@ -77,7 +78,7 @@
 
 <script>
 
-import { Doughnut,Bar,Line } from 'vue-chartjs'
+import { Doughnut,Bar } from 'vue-chartjs'
 
 
 import { Chart as ChartJS, Title,ArcElement,
@@ -89,7 +90,7 @@ ChartJS.register(Title, Tooltip, Legend,ArcElement,
 export default {
     name: 'GraphicsPge',
     components: {
-    Doughnut,Bar,Line
+    Doughnut,Bar
   },
 //   computed: {
 //     DoughnutStyle () {
@@ -135,24 +136,24 @@ export default {
     //     //    },
     //     // ],
     //   },
-      BarData: {
-        labels: [ 'Развлечения', 'Еда', 'Транспорт' ],
-        datasets: [ 
-            { 
-                data: [40, 20, 12],
-                backgroundColor: 
-                [
-                    'rgba(28, 222, 202, 1)',
-                    'rgba(28, 222, 202, 0.66)',
-                    'rgba(28, 222, 202, 0.33)'
-                ],
-                borderWidth:0,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            },
-        ],
-      },
+      //BarData: {
+      //  labels: [ 'Развлечения', 'Еда', 'Транспорт' ],
+      //  datasets: [ 
+      //      { 
+      //          data: [40, 20, 12],
+      //          backgroundColor: 
+      //          [
+      //              'rgba(28, 222, 202, 1)',
+      //              'rgba(28, 222, 202, 0.66)',
+      //              'rgba(28, 222, 202, 0.33)'
+      //          ],
+      //          borderWidth:0,
+      //          fill: false,
+      //          borderColor: 'rgb(75, 192, 192)',
+      //          tension: 0.1
+      //      },
+      //  ],
+      //},
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
@@ -160,10 +161,10 @@ export default {
     }
   },
   methods: {
-    formatDate(date) {
-        // Здесь можно использовать библиотеки для форматирования даты, например, moment.js
-        return moment(date).format('YYYY-MM-DD'); // Форматирование даты в нужный формат
-    }
+    // formatDate(date) {
+    //     // Здесь можно использовать библиотеки для форматирования даты, например, moment.js
+    //     return moment(date).format('YYYY-MM-DD'); // Форматирование даты в нужный формат
+    // }
 },
   mounted() {
         this.loaded = false;
@@ -212,6 +213,33 @@ export default {
             //     return name.category;
             // });
             console.log(this.table.date);
+        }),
+        fetch('OperationWithMoney/WeeklyConsumptionGruopByDay', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(response => {
+            this.BarData = {
+                labels: [ 'Понедельник', 'Вторник', 'Среда','Четверг','Пятница','Суббота','Воскресенье' ],
+                datasets: [{ 
+                    data:  response.map((responseData)=>responseData.value),
+                    backgroundColor: 
+                    [
+                        'rgba(28, 222, 202, 1)',
+                        'rgba(28, 222, 202, 0.66)',
+                        'rgba(28, 222, 202, 0.33)'
+                    ],
+                    borderWidth:0,
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                   },
+                ],
+            }
+            this.loaded2 = true
         })
    }
   
