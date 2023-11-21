@@ -1,61 +1,60 @@
 ﻿using Domain;
-using Domain.Entity;
+using Domain.ViewEntity;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
-using System.Text.Json;
 
 namespace webapi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class OperationCategoryController : ControllerBase
+    public class OperationCategoryController : ControllerBase // TODO добавить обработку ошибок + ошибок при валидации
     {
-        private readonly IOperationCategorySercvice _sercvice;
+        private readonly IOperationCategoryService _service;
 
-        public OperationCategoryController(IOperationCategorySercvice sercvice)
+        public OperationCategoryController(IOperationCategoryService service)
         {
-            _sercvice = sercvice;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetByType(string type)
-        {
-            var result = await _sercvice.GetByType(type);
-
-            if(result == null || result.Count == 0)
-            {
-                return NotFound();
-            }
-
-            return Ok(result);
+            _service = service;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(object formData)
+        public async Task<IActionResult> CreateAsync(object formData)
         {
-            var operationCategory = JsonSerializer.Deserialize<OperationCategory>((JsonElement)formData);
-
-            if (operationCategory == null)
+            if (JsonSerializer<OperationCategoryView>.Deserialize(formData) is not {} categoryView)
             {
-                return BadRequest();
+                return BadRequest();// TODO добавить список ошибок
             }
 
-            operationCategory.Type = Constant.Consumption;
-
-            return await _sercvice.Create(operationCategory) ? Ok() : BadRequest();
+            return await _service.CreateAsync(categoryView) ? Ok() : BadRequest();
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put(object formData)
+        public async Task<IActionResult> UpdateAsync(object formData)
         {
-            var operationCategory = JsonSerializer.Deserialize<OperationCategory>((JsonElement)formData);
-
-            if(operationCategory == null)
+            if (JsonSerializer<OperationCategoryView>.Deserialize(formData) is not {} categoryView)
             {
-                return BadRequest();
+                return BadRequest(); // TODO добавить список ошибок
             }
 
-            return await _sercvice.Update(operationCategory) ? Ok() : BadRequest();
+            return await _service.UpdateAsync(categoryView) ? Ok() : BadRequest();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAsync(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return BadRequest("Категория пуста");
+            }
+
+            return await _service.DeleteAsync(name) ? Ok() : BadRequest();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRangeAsync(int pageNumber, int pageElementCount)
+        {
+            var categories = await _service.GetRangeAsync(pageNumber, pageElementCount);
+
+            return categories.Any() ? Ok(categories) : NoContent();
         }
     }
 }

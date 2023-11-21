@@ -1,11 +1,13 @@
-﻿using Domain.Entity;
+﻿using Domain.DatabaseEntity;
 
-namespace DAL.Interfaces
+namespace DAL.Interfaces;
+
+public interface IOperationWithMoneyRepository : IBaseRepository<OperationWithMoney>
 {
-    public interface IOperationWithMoneyRepository
-    {
-        Task<OperationWithMoney?> GetById(Guid id);
-        Task<bool> Create(OperationWithMoney entity);
-        Task<bool> Delete(OperationWithMoney entity);
-    }
+    Task<List<OperationWithMoney>> GetRangeWithCategoriesAsync(bool isConsumption, int count, int skip);
+
+    Task<List<OperationWithMoney>>
+        GetPerPeriodWithCategoriesAsync(bool isConsumption, DateTime periodStart, DateTime periodEnd);
+
+    decimal GetMonthlyIncome();
 }

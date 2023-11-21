@@ -1,72 +1,71 @@
 ﻿using DAL.Interfaces;
-using Domain.Entity;
+using Domain.DatabaseEntity;
 using Microsoft.EntityFrameworkCore;
 
-namespace DAL.Implementations
+namespace DAL.Implementations;
+
+public class OperationCategoryRepository : IOperationCategoryRepository
 {
-    public class OperationCategoryRepository : IOperationCategoryRepository
+    private readonly ApplicationDbContext _context;
+
+    public OperationCategoryRepository(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public OperationCategoryRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+    public async Task<OperationCategory?> GetByIdAsync(Guid id)
+    {
+        return await _context.OperationCategories.FirstOrDefaultAsync(e => e.Id == id);
+    }
 
-        public Task<bool> Create(OperationCategory entity)
-        {
-            if (entity == null)
-            {
-                return Task.FromResult(false);
-            }
+    public async Task<bool> CreateAsync(OperationCategory entity)
+    {
+        _context.OperationCategories.Add(entity);
+    
+        await _context.SaveChangesAsync();
+    
+        return true;
+    }
 
-            _context.OperationCategories.Add(entity);
+    public async Task<bool> UpdateAsync(OperationCategory entity)
+    {
+        _context.OperationCategories.Update(entity);
 
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
-        }
+        await _context.SaveChangesAsync();
 
-        public Task<bool> Delete(OperationCategory entity)
-        {
-            if (entity == null)
-            {
-                return Task.FromResult(false);
-            }
+        return true;
+    }
 
-            _context.OperationCategories.Remove(entity);
+    public async Task<bool> DeleteAsync(OperationCategory entity)
+    {
+        _context.OperationCategories.Remove(entity);
 
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
-        }
+        await _context.SaveChangesAsync();
 
-        public Task<List<OperationCategory>> GetAll()
-        {
-            return _context.OperationCategories.ToListAsync();
-        }
+        return true;
+    }
 
-        public Task<OperationCategory?> GetById(Guid id)
-        {
-            return _context.OperationCategories.FirstOrDefaultAsync(x => x.Id == id);
-        }
+    public async Task<OperationCategory?> GetByNameAsync(string name)
+    {
+        return await _context.OperationCategories.FirstOrDefaultAsync(e => e.Name.Equals(name));
+    }
 
-        public Task<OperationCategory?> GetByName(string name)
-        {
-            return _context.OperationCategories.FirstOrDefaultAsync(x => x.Name == name);
-        }
+    public async Task<List<OperationCategory>> GetRangeAsync(int count, int skip)
+    {
+        return await _context.OperationCategories.Skip(skip).Take(count).ToListAsync();
+    }
 
-        public Task<List<OperationCategory>> GetByType(string type)
-        {
-            return _context.OperationCategories.Where(x => x.Type == type).ToListAsync();
-        }
+    public async Task<List<OperationCategory>> GetAllConsumption()
+    {
+        return await _context.OperationCategories.Where(e => e.IsConsumption).ToListAsync();
+    }
 
-        public Task<bool> Update(OperationCategory entity)
-        {
-            if (entity == null)
-            {
-                return Task.FromResult(false);
-            }
+    public async Task<bool> UpdateRangeAsync(List<OperationCategory> categories)
+    {
+        _context.OperationCategories.UpdateRange(categories);
 
-            _context.OperationCategories.Update(entity);
+        await _context.SaveChangesAsync();
 
-            return Task.FromResult(_context.SaveChangesAsync().Result != 0);
-        }
+        return true;
     }
 }

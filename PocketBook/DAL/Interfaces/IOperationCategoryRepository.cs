@@ -1,15 +1,11 @@
-﻿using Domain.Entity;
+﻿using Domain.DatabaseEntity;
 
-namespace DAL.Interfaces
+namespace DAL.Interfaces;
+
+public interface IOperationCategoryRepository : IBaseRepository<OperationCategory>
 {
-    public interface IOperationCategoryRepository
-    {
-        Task<OperationCategory?> GetByName(string name);
-        Task<OperationCategory?> GetById(Guid id);
-        Task<List<OperationCategory>> GetAll();
-        Task<bool> Create(OperationCategory entity);
-        Task<bool> Update(OperationCategory entity);
-        Task<bool> Delete(OperationCategory entity);
-        Task<List<OperationCategory>> GetByType(string type);
-    }
+    Task<OperationCategory?> GetByNameAsync(string name);
+    Task<List<OperationCategory>> GetRangeAsync(int count, int skip);
+    Task<List<OperationCategory>> GetAllConsumption();
+    Task<bool> UpdateRangeAsync(List<OperationCategory> categories);
 }
