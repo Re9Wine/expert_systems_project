@@ -1,5 +1,5 @@
 ﻿using Domain;
-using Domain.DatabaseEntity;
+using Domain.ViewEntity;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 
@@ -7,7 +7,7 @@ namespace webapi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class OperationWithMoneyController : ControllerBase
+    public class OperationWithMoneyController : ControllerBase // TODO добавить обработку ошибок + ошибок при валидации
     {
         private readonly IOperationWithMoneyService _service;
 
@@ -16,65 +16,106 @@ namespace webapi.Controllers
             _service = service;
         }
 
-        [HttpGet]
-        [Route("GetWeeklyGroupByDay")]
-        public async Task<IActionResult> GetWeeklyGroupByDayAsync(bool isConsumption, DateTime finalDate = default)
-        {
-            var result = await _service.GetWeeklyGroupByDayAsync(isConsumption, finalDate);
-
-            if (result.Count == 0)
-            {
-                return NoContent();
-            }
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("GetMonthlyGroupByDay")]
-        public async Task<IActionResult> GetMonthlyGroupByDayAsync(bool isConsumption, DateTime finalDate = default)
-        {
-            var result = await _service.GetMonthlyGroupByDayAsync(isConsumption, finalDate);
-
-            if(result.Count == 0)
-            {
-                return NoContent();
-            }
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        [Route("GetRange")]
-        public async Task<IActionResult> GetRangeAsync(bool isConsumption, int amount = 5, int skip = 0)
-        {
-            var result = await _service.GetRangeAsync(isConsumption, amount, skip);
-
-            if(result.Count == 0)
-            {
-                return NoContent();
-            }
-
-            return Ok(result);
-        }
-
         [HttpPost]
         public async Task<IActionResult> CreateAsync(object formData)
         {
-            var operationWithMoney = JsonSerializer<OperationWithMoney>.Deserialize(formData);
-
-            if (operationWithMoney == null)
+            if (JsonSerializer<OperationWithMoneyView>.Deserialize(formData) is not {} operationView)
             {
-                return BadRequest();
+                return BadRequest(); // TODO добавить список ошибок
             }
 
-            return await _service.CreateAsync(operationWithMoney) ? Ok() : BadRequest();
+            return await _service.CreateAsync(operationView) ? Ok() : BadRequest();
         }
 
         [HttpDelete]
-        public async Task<IActionResult> UpdateAsync(Guid operationWithMoneyId)
+        public async Task<IActionResult> DeleteAsync(Guid operationId)
         {
-            return await _service.DeleteAsync(operationWithMoneyId) ? Ok() : BadRequest();
+            return await _service.DeleteAsync(operationId) ? Ok() : BadRequest();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateAsync(object formData)
+        {
+            if (JsonSerializer<OperationWithMoneyView>.Deserialize(formData) is not { } operationView)
+            {
+                return BadRequest(); // TODO добавить список ошибок
+            }
+            
+            return await _service.UpdateAsync(operationView) ? Ok() : BadRequest();
+        }
+
+        [HttpGet]
+        [Route("GetFiveLastedConsumption")]
+        public async Task<IActionResult> GetFiveLastedConsumption()
+        {
+            var operations = await _service.GetRangeWithCategoriesAsync(true, 0, 5);
+            
+            return operations.Any() ? Ok(operations) : NoContent();
+        }
+        
+        [HttpGet]
+        [Route("GetRange")]
+        public async Task<IActionResult> GetRangeAsync(bool isConsumption, int pageNumber, int pageElementCount)
+        {
+            var operations = await _service.GetRangeWithCategoriesAsync(isConsumption, pageNumber, pageElementCount);
+
+            return operations.Any() ? Ok(operations) : NoContent();
+        }
+
+        [HttpGet]
+        [Route("GetWeeklyForBarChar")]
+        public async Task<IActionResult> GetWeeklyForBarCharAsync(bool isConsumption, DateTime finalDate)
+        {
+            if (finalDate.Equals(default))
+            {
+                finalDate = DateTime.Now;
+            }
+
+            var barChar = await _service.GetWeeklyForBarCharAsync(isConsumption, finalDate);
+
+            return barChar.Any() ? Ok(barChar) : NoContent();
+        }
+        
+        [HttpGet]
+        [Route("GetMonthlyForBarChar")]
+        public async Task<IActionResult> GetMonthlyForBarCharAsync(bool isConsumption, DateTime finalDate)
+        {
+            if (finalDate.Equals(default))
+            {
+                finalDate = DateTime.Now;
+            }
+            
+            var barChar = await _service.GetMonthlyForBarCharAsync(isConsumption, finalDate);
+
+            return barChar.Any() ? Ok(barChar) : NoContent();
+        }
+        
+        [HttpGet]
+        [Route("GetWeeklyForDoughnut")]
+        public async Task<IActionResult> GetWeeklyForDoughnutAsync(bool isConsumption, DateTime finalDate)
+        {
+            if (finalDate.Equals(default))
+            {
+                finalDate = DateTime.Now;
+            }
+
+            var barChar = await _service.GetWeeklyForDoughnutAsync(isConsumption, finalDate);
+
+            return barChar.Any() ? Ok(barChar) : NoContent();
+        }
+        
+        [HttpGet]
+        [Route("GetMonthlyForDoughnut")]
+        public async Task<IActionResult> GetMonthlyForDoughnutAsync(bool isConsumption, DateTime finalDate)
+        {
+            if (finalDate.Equals(default))
+            {
+                finalDate = DateTime.Now;
+            }
+            
+            var barChar = await _service.GetMonthlyForDoughnutAsync(isConsumption, finalDate);
+
+            return barChar.Any() ? Ok(barChar) : NoContent();
         }
     }
 }

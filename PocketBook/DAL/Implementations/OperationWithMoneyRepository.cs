@@ -2,64 +2,69 @@
 using Domain.DatabaseEntity;
 using Microsoft.EntityFrameworkCore;
 
-namespace DAL.Implementations
+namespace DAL.Implementations;
+
+public class OperationWithMoneyRepository : IOperationWithMoneyRepository
 {
-    public class OperationWithMoneyRepository : IOperationWithMoneyRepository
+    private readonly ApplicationDbContext _context;
+
+    public OperationWithMoneyRepository(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public OperationWithMoneyRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+    public async Task<OperationWithMoney?> GetByIdAsync(Guid id) // TODO добавить категорию 
+    {
+        return await _context.OperationWithMoneys.FirstOrDefaultAsync(e => e.Id == id);
+    }
 
-        public async Task<bool> CreateAsync(OperationWithMoney entity)
-        {
-            if (entity == null)
-            {
-                return false;
-            }
+    public async Task<bool> CreateAsync(OperationWithMoney entity)
+    {
+        _context.OperationWithMoneys.Add(entity);
+            
+        await _context.SaveChangesAsync();
+            
+        return true;
+    }
 
-            _context.OperationWithMoneys.Add(entity);
+    public async Task<bool> UpdateAsync(OperationWithMoney entity)
+    {
+        _context.OperationWithMoneys.Update(entity);
+            
+        await _context.SaveChangesAsync();
+            
+        return true;
+    }
 
-            return await _context.SaveChangesAsync() != 0;
-        }
+    public async Task<bool> DeleteAsync(OperationWithMoney entity)
+    {
+        _context.OperationWithMoneys.Remove(entity);
+            
+        await _context.SaveChangesAsync();
+            
+        return true;
+    }
 
-        public async Task<bool> DeleteAsync(OperationWithMoney entity)
-        {
-            if (entity == null)
-            {
-                return false;
-            }
+    public async Task<List<OperationWithMoney>> GetRangeWithCategoriesAsync(bool isConsumption, int count,
+        int skip)
+    {
+        return await _context.OperationWithMoneys.Include(e => e.OperationCategoryNavigation)
+            .Where(e => e.OperationCategoryNavigation.IsConsumption.Equals(isConsumption)).Skip(skip).Take(count).ToListAsync();
+    }
 
-            _context.OperationWithMoneys.Remove(entity);
+    public async Task<List<OperationWithMoney>> GetPerPeriodWithCategoriesAsync(bool isConsumption,
+        DateTime periodStart, DateTime periodEnd)
+    {
+        return await _context.OperationWithMoneys.Include(e => e.OperationCategoryNavigation).Where(e =>
+                e.OperationCategoryNavigation.IsConsumption.Equals(isConsumption) &&
+                e.Date >= periodStart &&
+                e.Date <= periodEnd)
+            .ToListAsync();
+    }
 
-            return await _context.SaveChangesAsync() != 0;
-        }
-
-        public async Task<OperationWithMoney?> GetByIdAsync(Guid id)
-        {
-            return await _context.OperationWithMoneys.FirstOrDefaultAsync(x => x.Id == id);
-        }
-
-        public async Task<List<OperationWithMoney>> GetPerPeriodAsync
-            (bool isConusption, DateTime periodBeginnig, DateTime periodEnd)
-        {
-            return await _context.OperationWithMoneys
-                .Where(x => x.IsConsumption == isConusption &&
-                            x.Date >= periodBeginnig &&
-                            x.Date <= periodEnd)
-                .ToListAsync();
-        }
-
-        public async Task<List<OperationWithMoney>> GetRangeWihtCategoriesAsync(bool isConsumption, int amount, int skip)
-        {
-            return await _context.OperationWithMoneys
-                .Include(x => x.OperationCategoryNavigation)
-                .Where(x => x.IsConsumption == isConsumption)
-                .Skip(skip)
-                .Take(amount)
-                .ToListAsync();
-        }
+    public decimal GetMonthlyIncome()
+    {
+        return _context.OperationWithMoneys.Include(e => e.OperationCategoryNavigation)
+            .Where(e => !e.OperationCategoryNavigation.IsConsumption).Sum(e => e.Value);
     }
 }

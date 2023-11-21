@@ -1,14 +1,16 @@
-﻿using Domain.DatabaseEntity;
-using Domain.ViewEntity;
+﻿using Domain.ViewEntity;
 
 namespace Service.Interfaces
 {
     public interface IOperationWithMoneyService
     {
-        Task<bool> CreateAsync(OperationWithMoney operation);
+        Task<bool> CreateAsync(OperationWithMoneyView operationView);
+        Task<bool> UpdateAsync(OperationWithMoneyView operationView);
         Task<bool> DeleteAsync(Guid id);
-        Task<List<OperationWithMoneyView>> GetRangeAsync(bool isConsumption, int amount, int skip = 0);
-        Task<List<OperationCategoryView>> GetWeeklyGroupByDayAsync(bool isConsumption, DateTime finalDate = default);
-        Task<List<OperationCategoryView>> GetMonthlyGroupByDayAsync(bool isConsumption, DateTime finalDate = default);
+        Task<List<OperationWithMoneyView>> GetRangeWithCategoriesAsync(bool isConsumption, int pageNumber, int pageElementCount);
+        Task<List<BarChartView>> GetWeeklyForBarCharAsync(bool isConsumption, DateTime finalDate);
+        Task<List<BarChartView>> GetMonthlyForBarCharAsync(bool isConsumption, DateTime finalDate);
+        Task<List<DoughnutView>> GetWeeklyForDoughnutAsync(bool isConsumption, DateTime finalDate);
+        Task<List<DoughnutView>> GetMonthlyForDoughnutAsync(bool isConsumption, DateTime finalDate);
     }
 }

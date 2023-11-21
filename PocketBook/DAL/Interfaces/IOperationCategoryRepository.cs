@@ -1,14 +1,11 @@
 ﻿using Domain.DatabaseEntity;
 
-namespace DAL.Interfaces
+namespace DAL.Interfaces;
+
+public interface IOperationCategoryRepository : IBaseRepository<OperationCategory>
 {
-    public interface IOperationCategoryRepository
-    {
-        Task<OperationCategory?> GetByIdAsync(Guid id);
-        Task<List<OperationCategory>> GetAllAsync(); // TODO мб заменить на получение части
-        Task<bool> CreateAsync(OperationCategory entity);
-        Task<bool> UpdateAsync(OperationCategory entity);
-        Task<List<OperationCategory>> GetPerPeriodWithOperationsAsync
-            (bool isConusption, DateTime periodBeginnig, DateTime periodEnd);
-    }
+    Task<OperationCategory?> GetByNameAsync(string name);
+    Task<List<OperationCategory>> GetRangeAsync(int count, int skip);
+    Task<List<OperationCategory>> GetAllConsumption();
+    Task<bool> UpdateRangeAsync(List<OperationCategory> categories);
 }

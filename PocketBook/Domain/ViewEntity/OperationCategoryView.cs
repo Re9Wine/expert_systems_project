@@ -1,9 +1,17 @@
-﻿namespace Domain.ViewEntity
+using System.ComponentModel.DataAnnotations;
+
+namespace Domain.ViewEntity;
+
+public class OperationCategoryView //TODO add error messages
 {
-    public class OperationCategoryView
-    {
-        public DateTime Date { get; set; }
-        public string Category { get; set; } = null!;
-        public decimal Sum { get; set; }
-    }
+    [Required(ErrorMessage = "")]
+    [StringLength(100, ErrorMessage = "")]
+    public required string Name { get; set; }
+
+    [Required(ErrorMessage = "")]
+    [Range(0.0, 9999999999.99, ErrorMessage = "")]
+    public decimal Limit { get; set; }
+    
+    [Required(ErrorMessage = "")]
+    public bool IsConsumption { get; set; }
 }

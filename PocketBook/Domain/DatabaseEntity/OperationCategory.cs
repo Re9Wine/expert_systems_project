@@ -1,31 +1,20 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿namespace Domain.DatabaseEntity;
 
-namespace Domain.DatabaseEntity
+public class OperationCategory
 {
-    [Table("OperationCategory")]
-    public class OperationCategory
-    {
-        public OperationCategory()
-        {
-            OperationWithMoneys = new HashSet<OperationWithMoney>();
-        }
+    public Guid Id { get; set; }
 
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public required string Name { get; set; }
-
-        [Required]
-        public int Priority { get; set; }
-
-        [DefaultValue(true)]
-        public bool IsChangeable { get; set; } = true;
+    public string Name { get; set; } = null!;
+        
+    public int Priority { get; set; }
+        
+    public decimal Limit { get; set; }
+        
+    public bool IsChangeable { get; set; }
+    
+    public bool IsConsumption { get; set; }
 
 
-        public virtual ICollection<OperationWithMoney> OperationWithMoneys { get; set; }
-    }
+    public virtual ICollection<OperationWithMoney> OperationWithMoneys { get; set; } =
+        new List<OperationWithMoney>();
 }

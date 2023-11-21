@@ -1,99 +1,146 @@
-﻿using DAL.Interfaces;
+﻿using AutoMapper;
+using DAL.Interfaces;
+using Domain;
 using Domain.DatabaseEntity;
 using Domain.ViewEntity;
 using Service.Interfaces;
-using System.Data;
 
-namespace Service.Implementations
+namespace Service.Implementations;
+
+public class OperationWithMoneyService : IOperationWithMoneyService
 {
-    public class OperationWithMoneyService : IOperationWithMoneyService
+    private readonly IOperationWithMoneyRepository _repository;
+    private readonly MapperConfiguration _configOperationAndView;
+
+    public OperationWithMoneyService(IOperationWithMoneyRepository repository)
     {
-        private readonly IOperationWithMoneyRepository _repository;
-
-        public OperationWithMoneyService(IOperationWithMoneyRepository repository)
+        _repository = repository;
+        _configOperationAndView = new MapperConfiguration(config =>
+            config.CreateMap<OperationWithMoney, OperationWithMoneyView>().ReverseMap());
+    }
+        
+    public async Task<bool> CreateAsync(OperationWithMoneyView operationView)
+    {
+        if (await _repository.GetByIdAsync(operationView.Id) is not null)
         {
-            _repository = repository;
+            return false;
+        }
+        
+        var mapper = new Mapper(_configOperationAndView);
+        var operation = mapper.Map<OperationWithMoney>(operationView);
+
+        operationView.Date = DateTime.Now;
+
+        return await _repository.CreateAsync(operation);
+    }
+
+    public async Task<bool> UpdateAsync(OperationWithMoneyView operationView)
+    {
+        if (await _repository.GetByIdAsync(operationView.Id) is not { } oldOperation)
+        {
+            return false;
         }
 
-        public async Task<bool> CreateAsync(OperationWithMoney operation)
+        var mapper = new Mapper(_configOperationAndView);
+        var operation = mapper.Map<OperationWithMoney>(operationView);
+
+        operation.Date = oldOperation.Date;
+        
+        return await _repository.UpdateAsync(operation);
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        if (await _repository.GetByIdAsync(id) is not { } operation)
         {
-            return await _repository.CreateAsync(operation);
+            return false;
         }
 
-        public async Task<bool> DeleteAsync(Guid id)
+        return await _repository.DeleteAsync(operation);
+    }
+
+    public async Task<List<OperationWithMoneyView>> GetRangeWithCategoriesAsync(bool isConsumption, int pageNumber,
+        int pageElementCount)
+    {
+        var mapper = new Mapper(_configOperationAndView);
+        var operations =
+            _repository.GetRangeWithCategoriesAsync(isConsumption, pageElementCount, pageNumber * pageElementCount);
+
+        return mapper.Map<List<OperationWithMoneyView>>(await operations);
+    }
+
+    public async Task<List<BarChartView>> GetWeeklyForBarCharAsync(bool isConsumption, DateTime finalDate)
+    {
+        finalDate = finalDate.Date;
+
+        var weekStart = finalDate.AddDays(-1 * (int)finalDate.DayOfWeek);
+        var operations = await _repository.GetPerPeriodWithCategoriesAsync(isConsumption, weekStart, finalDate);
+        
+        return ConvertOperationWithMoneyToBarChartView(operations);
+    }
+
+    public async Task<List<BarChartView>> GetMonthlyForBarCharAsync(bool isConsumption, DateTime finalDate)
+    {
+        finalDate = finalDate.Date;
+
+        var weekStart = finalDate.AddDays(-1 * (int)finalDate.DayOfWeek);
+        var operations = await _repository.GetPerPeriodWithCategoriesAsync(isConsumption, weekStart, finalDate);
+        
+        return ConvertOperationWithMoneyToBarChartView(operations);
+    }
+
+    public async Task<List<DoughnutView>> GetWeeklyForDoughnutAsync(bool isConsumption, DateTime finalDate)
+    {
+        finalDate = finalDate.Date;
+
+        var weekStart = finalDate.AddDays(-1 * (int)finalDate.DayOfWeek);
+        var operations = await _repository.GetPerPeriodWithCategoriesAsync(isConsumption, weekStart, finalDate);
+
+        return ConvertOperationWithMoneyToDoughnutView(operations);
+    }
+
+    public async Task<List<DoughnutView>> GetMonthlyForDoughnutAsync(bool isConsumption, DateTime finalDate)
+    {
+        finalDate = finalDate.Date;
+
+        var monthStart = finalDate.AddDays(-1 * finalDate.Day);
+        var operations = await _repository.GetPerPeriodWithCategoriesAsync(isConsumption, monthStart, finalDate);
+        
+        return ConvertOperationWithMoneyToDoughnutView(operations);
+    }
+
+    private List<DoughnutView> ConvertOperationWithMoneyToDoughnutView(
+        ICollection<OperationWithMoney> operations) => operations
+        .GroupBy(e => e.OperationCategoryNavigation.Name).Select(e => new DoughnutView
         {
-            var operation = await _repository.GetByIdAsync(id);
+            Category = e.Key,
+            Value = e.Sum(o => o.Value),
+            ErrorMessages = GetErrorMessages(operations.ToList())
+        }).ToList();
 
-            if (operation == null)
-            {
-                return false;
-            }
+    private List<BarChartView> ConvertOperationWithMoneyToBarChartView(
+        ICollection<OperationWithMoney> operations) => operations
+        .GroupBy(e => e.Date.Date).Select(e => new BarChartView
+        {
+            Date = e.Key,
+            Sum = e.Sum(o => o.Value),
+            ErrorMessages = GetErrorMessages(operations.ToList())
+        }).ToList();
 
-            return await _repository.DeleteAsync(operation);
+    private List<string> GetErrorMessages(List<OperationWithMoney> operations)
+    {
+        var errorMessages = new List<string>();
+        var monthlyIncome = _repository.GetMonthlyIncome();
+
+        if (operations.Sum(e => e.Value) > monthlyIncome)
+        {
+            errorMessages.Add(Resources.ExcessConsumption);
         }
 
-        public async Task<List<OperationCategoryView>> GetMonthlyGroupByDayAsync
-            (bool isConsumption, DateTime finalDate = default)
-        {
-            if (finalDate == default)
-            {
-                finalDate = DateTime.Now;
-            }
+        errorMessages.AddRange(from operation in operations.GroupBy(e => e.OperationCategoryNavigation.Name)
+            where operation.Sum(e => e.Value) > operation.First().OperationCategoryNavigation.Limit
+            select string.Format(Resources.ExcessConsumptionByCategoryFormat, operation.Key));
 
-            finalDate = finalDate.Date;
-            DateTime monthBeginning = finalDate.AddDays(-1 * finalDate.Day);
-
-            return await GetPerPeriodGroupByDayAsync(isConsumption, monthBeginning, finalDate);
-        }
-
-        public async Task<List<OperationWithMoneyView>> GetRangeAsync
-            (bool isConsumption, int amount, int skip = 0)
-        {
-            var operations = await _repository.GetRangeWihtCategoriesAsync(isConsumption, amount, skip);
-            var operationsView = new List<OperationWithMoneyView>();
-
-            operations.ForEach(operation =>
-            {
-                operationsView.Add(new OperationWithMoneyView()
-                {
-                    CategoryName = operation.OperationCategoryNavigation.Name,
-                    Date = operation.Date,
-                    Value = operation.Value,
-                    Description = operation.Description,
-                });
-            });
-
-            return operationsView;
-        }
-
-        public async Task<List<OperationCategoryView>> GetWeeklyGroupByDayAsync
-            (bool isConsumption, DateTime finalDate = default)
-        {
-            if (finalDate == default)
-            {
-                finalDate = DateTime.Now;
-            }
-
-            finalDate = finalDate.Date;
-            DateTime weekBeginning = finalDate.AddDays(-1 * (int)finalDate.DayOfWeek);
-
-            return await GetPerPeriodGroupByDayAsync(isConsumption, weekBeginning, finalDate);
-        }
-
-        private async Task<List<OperationCategoryView>> GetPerPeriodGroupByDayAsync
-            (bool isConsumption, DateTime periodBeginnig, DateTime periodEnd)
-        {
-            var operationsPerPeriod = await _repository.GetPerPeriodAsync(isConsumption, periodBeginnig, periodEnd);
-
-            return operationsPerPeriod
-                .GroupBy(x => x.Date.Date)
-                .Select(x => new OperationCategoryView()
-                {
-                    Date = x.Key,
-                    Sum = x.Sum(y => y.Value)
-                })
-                .OrderByDescending(x => x.Date)
-                .ToList();
-        }
+        return errorMessages;
     }
 }

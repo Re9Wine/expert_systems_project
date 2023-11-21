@@ -1,15 +1,11 @@
-﻿using Domain.DatabaseEntity;
-using Domain.ViewEntity;
+﻿using Domain.ViewEntity;
 
-namespace Service.Interfaces
+namespace Service.Interfaces;
+
+public interface IOperationCategoryService
 {
-    public interface IOperationCategorySercvice
-    {
-        Task<OperationCategory?> GetByIdAsync(Guid id);
-        Task<List<OperationCategory>> GetAllAsync(); // TODO мб заменить на получение части
-        Task<bool> CreateAsync(OperationCategory entity);
-        Task<bool> UpdateAsync(OperationCategory entity);
-        Task<List<OperationCategoryView>> GetWeeklyAsync(bool isConusption, DateTime finalDate = default);
-        Task<List<OperationCategoryView>> GetMonthlyAsync(bool isConusption, DateTime finalDate = default);
-    }
+    Task<bool> CreateAsync(OperationCategoryView categoryView);
+    Task<bool> UpdateAsync(OperationCategoryView categoryView);
+    Task<bool> DeleteAsync(string name);
+    Task<List<OperationCategoryView>> GetRangeAsync(int pageNumber, int pageElementCount);
 }

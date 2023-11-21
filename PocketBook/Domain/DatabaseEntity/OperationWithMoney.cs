@@ -1,41 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿namespace Domain.DatabaseEntity;
 
-namespace Domain.DatabaseEntity
+public class OperationWithMoney
 {
-    [Table("OperationWithMoney")]
-    public class OperationWithMoney
-    {
-        public OperationWithMoney()
-        {
-            var currentDate = DateTime.Now;
+    public Guid Id { get; set; }
 
-            Date = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day,
-                currentDate.Hour, currentDate.Minute, currentDate.Second);
-        }
+    public Guid CategoryId { get; set; }
 
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
+    public string Description { get; set; } = null!;
+        
+    public decimal Value { get; set; }
+        
+    public DateTime Date { get; set; }
 
-        public Guid OperationId { get; set; }
-
-        [Required]
-        public bool IsConsumption { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public required string Description { get; set; }
-
-        [Required]
-        [Column(TypeName = "decimal(10, 2)")]
-        public decimal Value { get; set; }
-
-        [Required]
-        [Column(TypeName = "timestamp without time zone")]
-        public DateTime Date { get; set; } = DateTime.Now;
-
-
-        [ForeignKey(nameof(OperationId))]
-        public virtual OperationCategory OperationCategoryNavigation { get; set; } = null!;
-    }
+        
+    public virtual OperationCategory OperationCategoryNavigation { get; set; } = null!;
 }

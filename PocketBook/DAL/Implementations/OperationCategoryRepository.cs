@@ -2,61 +2,70 @@
 using Domain.DatabaseEntity;
 using Microsoft.EntityFrameworkCore;
 
-namespace DAL.Implementations
+namespace DAL.Implementations;
+
+public class OperationCategoryRepository : IOperationCategoryRepository
 {
-    public class OperationCategoryRepository : IOperationCategoryRepository
+    private readonly ApplicationDbContext _context;
+
+    public OperationCategoryRepository(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public OperationCategoryRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+    public async Task<OperationCategory?> GetByIdAsync(Guid id)
+    {
+        return await _context.OperationCategories.FirstOrDefaultAsync(e => e.Id == id);
+    }
 
-        public async Task<bool> CreateAsync(OperationCategory entity)
-        {
-            if(entity == null)
-            {
-                return false;
-            }
+    public async Task<bool> CreateAsync(OperationCategory entity)
+    {
+        _context.OperationCategories.Add(entity);
+    
+        await _context.SaveChangesAsync();
+    
+        return true;
+    }
 
-            _context.OperationCategories.Add(entity);
+    public async Task<bool> UpdateAsync(OperationCategory entity)
+    {
+        _context.OperationCategories.Update(entity);
 
-            return await _context.SaveChangesAsync() != 0;
-        }
+        await _context.SaveChangesAsync();
 
-        public async Task<List<OperationCategory>> GetAllAsync()
-        {
-            return await _context.OperationCategories.ToListAsync();
-        }
+        return true;
+    }
 
-        public async Task<OperationCategory?> GetByIdAsync(Guid id)
-        {
-            return await _context.OperationCategories.FirstOrDefaultAsync(x => x.Id == id);
-        }
+    public async Task<bool> DeleteAsync(OperationCategory entity)
+    {
+        _context.OperationCategories.Remove(entity);
 
-        public async Task<List<OperationCategory>> GetPerPeriodWithOperationsAsync
-            (bool isConusption, DateTime periodBeginnig, DateTime periodEnd)
-        {
-            return await _context.OperationCategories
-                .Include(x => x.OperationWithMoneys)
-                .Where(x => x.OperationWithMoneys
-                    .Where(y => y.IsConsumption == isConusption &&
-                                y.Date >= periodBeginnig &&
-                                y.Date <= periodEnd).Count() != 0)
-                .ToListAsync();
-        }
+        await _context.SaveChangesAsync();
 
-        public async Task<bool> UpdateAsync(OperationCategory entity)
-        {
-            if (entity == null)
-            {
-                return false;
-            }
+        return true;
+    }
 
-            _context.OperationCategories.Update(entity);
+    public async Task<OperationCategory?> GetByNameAsync(string name)
+    {
+        return await _context.OperationCategories.FirstOrDefaultAsync(e => e.Name.Equals(name));
+    }
 
-            return await _context.SaveChangesAsync() != 0;
-        }
+    public async Task<List<OperationCategory>> GetRangeAsync(int count, int skip)
+    {
+        return await _context.OperationCategories.Skip(skip).Take(count).ToListAsync();
+    }
+
+    public async Task<List<OperationCategory>> GetAllConsumption()
+    {
+        return await _context.OperationCategories.Where(e => e.IsConsumption).ToListAsync();
+    }
+
+    public async Task<bool> UpdateRangeAsync(List<OperationCategory> categories)
+    {
+        _context.OperationCategories.UpdateRange(categories);
+
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 }
