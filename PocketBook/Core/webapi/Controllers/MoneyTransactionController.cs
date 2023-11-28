@@ -70,7 +70,7 @@ public class MoneyTransactionController : ControllerBase
     }
 
     [HttpGet]
-    [Route("GetMonthlyRecommendationsAsync")]
+    [Route("GetMonthlyRecommendations")]
     public async Task<IActionResult> GetMonthlyRecommendationsAsync()
     {
         var recommendations = await _service.GetMonthlyRecommendationsAsync(DateTime.Now);
@@ -79,7 +79,7 @@ public class MoneyTransactionController : ControllerBase
     }
 
     [HttpGet]
-    [Route("GetMonthlyConsumptionAsync")]
+    [Route("GetMonthlyConsumption")]
     public async Task<IActionResult> GetMonthlyConsumptionAsync()
     {
         var consumptionTableDTOs = await _service.GetMonthlyConsumptionAsync(DateTime.Now);
