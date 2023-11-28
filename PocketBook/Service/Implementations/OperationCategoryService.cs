@@ -23,6 +23,7 @@ public class OperationCategoryService : IOperationCategoryService
         {
             return false;
         }
+
                 
         var mapper = new Mapper(_configCategoryAndView);
         var category = mapper.Map<OperationCategory>(categoryView);
@@ -68,10 +69,10 @@ public class OperationCategoryService : IOperationCategoryService
         return await _repository.DeleteAsync(category);
     }
 
-    public async Task<List<OperationCategoryView>> GetRangeAsync(int pageNumber, int pageElementCount)
+    public async Task<List<OperationCategoryView>> GetRangeAsync(bool isConsumption,int pageNumber, int pageElementCount)
     {
         var mapper = new Mapper(_configCategoryAndView);
-        var categories = _repository.GetRangeAsync(pageElementCount, pageNumber * pageElementCount);
+        var categories = _repository.GetRangeAsync(isConsumption,pageElementCount, pageNumber * pageElementCount);
 
         return mapper.Map<List<OperationCategoryView>>(await categories);
     }

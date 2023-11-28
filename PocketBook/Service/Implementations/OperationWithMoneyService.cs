@@ -10,41 +10,37 @@ namespace Service.Implementations;
 public class OperationWithMoneyService : IOperationWithMoneyService
 {
     private readonly IOperationWithMoneyRepository _repository;
-    private readonly MapperConfiguration _configOperationAndView;
+        private readonly IOperationCategoryRepository _categoryRepository;
+        private readonly MapperConfiguration _configOperationAndView;
 
-    public OperationWithMoneyService(IOperationWithMoneyRepository repository)
-    {
-        _repository = repository;
-        _configOperationAndView = new MapperConfiguration(config =>
-            config.CreateMap<OperationWithMoney, OperationWithMoneyView>().ReverseMap());
-    }
-        
-    public async Task<bool> CreateAsync(OperationWithMoneyView operationView)
-    {
-        if (await _repository.GetByIdAsync(operationView.Id) is not null)
+        public OperationWithMoneyService(IOperationWithMoneyRepository repository,
+            IOperationCategoryRepository categoryRepository)
         {
-            return false;
+            _repository = repository;
+            _categoryRepository = categoryRepository;
+            _configOperationAndView = new MapperConfiguration(config =>
+                config.CreateMap<OperationWithMoney, OperationWithMoneyView>().ReverseMap());
         }
-        
-        var mapper = new Mapper(_configOperationAndView);
-        var operation = mapper.Map<OperationWithMoney>(operationView);
 
-        operationView.Date = DateTime.Now;
+        public async Task<bool> CreateAsync(OperationWithMoneyView operationView)
+        {
+            var mapper = new Mapper(_configOperationAndView);
+            var operation = mapper.Map<OperationWithMoney>(operationView);
 
-        return await _repository.CreateAsync(operation);
-    }
+            operation.Date = DateTime.Now;
+            operation.CategoryId = (await _categoryRepository.GetByNameAsync(operationView.Category))!.Id;
+
+            return await _repository.CreateAsync(operation) && await UpdateSalaryAsync();
+        }
 
     public async Task<bool> UpdateAsync(OperationWithMoneyView operationView)
     {
-        if (await _repository.GetByIdAsync(operationView.Id) is not { } oldOperation)
-        {
-            return false;
-        }
+       
 
         var mapper = new Mapper(_configOperationAndView);
         var operation = mapper.Map<OperationWithMoney>(operationView);
 
-        operation.Date = oldOperation.Date;
+        
         
         return await _repository.UpdateAsync(operation);
     }
@@ -63,15 +59,37 @@ public class OperationWithMoneyService : IOperationWithMoneyService
         int pageElementCount)
     {
         var mapper = new Mapper(_configOperationAndView);
-        var operations =
-            _repository.GetRangeWithCategoriesAsync(isConsumption, pageElementCount, pageNumber * pageElementCount);
+                var operations =
+                    await _repository.GetRangeWithCategoriesAsync(isConsumption, pageElementCount,
+                        pageNumber * pageElementCount);
 
-        return mapper.Map<List<OperationWithMoneyView>>(await operations);
+                var operationsView = mapper.Map<List<OperationWithMoneyView>>(operations);
+
+                for (var i = 0; i < operationsView.Count; i++)
+                {
+                    operationsView[i].Category = (await _categoryRepository.GetByIdAsync(operations[i].CategoryId)).Name;
+                }
+
+                return operationsView;
     }
+
+    private async Task<bool> UpdateSalaryAsync()
+        {
+            var categories = await _categoryRepository.GetAllConsumption();
+                    var totalPriority = categories.Sum(_ => _.Priority);
+                    var totalSalary = _repository.GetMonthlyIncome();
+
+                    foreach (var category in categories)
+                    {
+                        category.Limit = category.Priority * totalSalary / totalPriority;
+                    }
+
+                    return await _categoryRepository.UpdateRangeAsync(categories);
+        }
 
     public async Task<List<BarChartView>> GetWeeklyForBarCharAsync(bool isConsumption, DateTime finalDate)
     {
-        finalDate = finalDate.Date;
+
 
         var weekStart = finalDate.AddDays(-1 * (int)finalDate.DayOfWeek);
         var operations = await _repository.GetPerPeriodWithCategoriesAsync(isConsumption, weekStart, finalDate);
@@ -91,7 +109,7 @@ public class OperationWithMoneyService : IOperationWithMoneyService
 
     public async Task<List<DoughnutView>> GetWeeklyForDoughnutAsync(bool isConsumption, DateTime finalDate)
     {
-        finalDate = finalDate.Date;
+
 
         var weekStart = finalDate.AddDays(-1 * (int)finalDate.DayOfWeek);
         var operations = await _repository.GetPerPeriodWithCategoriesAsync(isConsumption, weekStart, finalDate);
