@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PocketBook.Domain.Entities;
 
+[Table(nameof(MoneyTransaction))]
 public class MoneyTransaction : BaseEntity
 {
     public Guid CategoryId { get; set; }

@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PocketBook.Domain.Entities;
 
+[Table(nameof(TransactionCategory))]
 public class TransactionCategory : BaseEntity
 {
     public string Name { get; set; } = null!;
