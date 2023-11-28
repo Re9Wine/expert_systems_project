@@ -4,6 +4,7 @@ import GraphicsPage from '../views/GraphicsPage.vue'
 import ExpensesPage from '../views/ExpensesPage.vue'
 import AuthorizationPage from '../views/AuthorizationPage.vue'
 import NewExpenses from '../views/NewExpenses.vue'
+import AboutPage from '../views/AboutPage.vue'
 
 
 const router = createRouter({
@@ -28,7 +29,11 @@ const router = createRouter({
         {
             path: '/authorization',
             component: AuthorizationPage
-        }
+        },
+        {
+            path: '/about',
+            component: AboutPage
+        },
     ]
 })
 

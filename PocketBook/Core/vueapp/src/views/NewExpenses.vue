@@ -7,11 +7,11 @@
     </div>
     <form @submit.prevent="handleSubmit" class="form-example">
       <div class="form_radio_btn">
-        <input v-model="formData.TypeOperation" id="radio-1" type="radio" name="radio" value='income'>
+        <input @change="check" v-model="formData.TypeOperation" id="radio-1" type="radio" name="radio" :value='false'>
         <label for="radio-1">Доходы</label>
       </div>
       <div class="form_radio_btn">
-        <input v-model="formData.TypeOperation" id="radio-2" type="radio" name="radio" value='consumption'>
+        <input @change="check" v-model="formData.TypeOperation" id="radio-2" type="radio" name="radio" :value='true'>
         <label for="radio-2">Расходы</label>
       </div>
       <div class="select">
@@ -61,7 +61,6 @@ export default {
         });
         if (response.ok) {
           console.log('Data sent successfully');
-          console.log(this.formData);
           console.log(this.formData.addData);
           this.formData.addData.Category = '';
           this.formData.addData.Limit = '';
@@ -74,22 +73,25 @@ export default {
         console.log('Error sending data', error);
       }
     },
+    check(){
+      fetch('OperationCategory?isConsumption='+ this.formData.TypeOperation +'&pageNumber=0&pageElementCount=15', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      })
+          .then(response => response.json())
+          .then(response => {
+            this.category = response.map((responseData) => responseData.name)
+            // var nameLengths = response.map(function(name) {
+            //     return name.category;
+            // });
+            // console.log(this.table.date);
+          })
+    },
   },
   mounted() {
-    fetch('OperationCategory', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    })
-        .then(response => response.json())
-        .then(response => {
-          this.category = response.map((responseData) => responseData.name)
-          // var nameLengths = response.map(function(name) {
-          //     return name.category;
-          // });
-          // console.log(this.table.date);
-        })
+
   }
 }
 

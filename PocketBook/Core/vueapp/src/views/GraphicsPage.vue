@@ -113,6 +113,7 @@ export default {
   data() {
       return {
         loaded: false,
+        loaded2: false,
         table: {
             date:[],
             category:[],
@@ -169,34 +170,40 @@ export default {
   mounted() {
         this.loaded = false;
         this.loaded2 = false;
-        fetch('OperationWithMoney/WeeklyConsumption', {
+        fetch('OperationWithMoney/GetWeeklyForDoughnut', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             },
         })
-        .then(response => response.json())
+        .then(response => {
+          if (response.status === 204){
+            console.log("hello")
+          }
+          return response.json()
+        })
         .then(response => {
             this.DoughnutData = {
-                labels: response.map((responseData)=>responseData.category),
-                datasets: [{
-                    backgroundColor: [
-                        'rgba(187, 134, 252, 1)',
-                        'rgba(187, 134, 252, 0.77)',
-                        'rgba(187, 134, 252, 0.55)',
-                        'rgba(187, 134, 252, 0.33)',
-                        'rgba(187, 134, 252, 0.11)'
-                    ],
-                    borderWidth: 0,
-                    fill: false,
-                    borderColor: 'rgb(75, 192, 192)',
-                    data: response.map((responseData)=>responseData.value),
-                    tension: 0.1
-                },],
+              labels: response.map((responseData)=>responseData.category),
+              datasets: [{
+                backgroundColor: [
+                  'rgba(187, 134, 252, 1)',
+                  'rgba(187, 134, 252, 0.77)',
+                  'rgba(187, 134, 252, 0.55)',
+                  'rgba(187, 134, 252, 0.33)',
+                  'rgba(187, 134, 252, 0.11)'
+                ],
+                borderWidth: 0,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                data: response.map((responseData)=>responseData.value),
+                tension: 0.1
+              },],
             }
             this.loaded = true
+
         }),
-        fetch('OperationWithMoney/FiveLatestConsumption', {
+        fetch('OperationWithMoney/GetFiveLastedConsumption', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -205,16 +212,17 @@ export default {
         .then(response => response.json())
         .then(response =>{
             this.table={
-                date:response.map((responseData)=>responseData.date),
-                category:response.map((responseData)=>responseData.category),
-                value:response.map((responseData)=>responseData.value),
+              date:response.map((responseData)=>responseData.date.toString("dd.mm.yyyy").substr(0, 10)),
+              category:response.map((responseData)=>responseData.category),
+              value:response.map((responseData)=>responseData.value),
             }
             // var nameLengths = response.map(function(name) {
             //     return name.category;
             // });
             console.log(this.table.date);
+
         }),
-        fetch('OperationWithMoney/WeeklyConsumptionGruopByDay', {
+        fetch('OperationWithMoney/GetWeeklyForBarChar', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -223,23 +231,24 @@ export default {
         .then(response => response.json())
         .then(response => {
             this.BarData = {
-                labels: [ 'Понедельник', 'Вторник', 'Среда','Четверг','Пятница','Суббота','Воскресенье' ],
-                datasets: [{ 
-                    data:  response.map((responseData)=>responseData.value),
-                    backgroundColor: 
+              labels: response.map((responseData)=>responseData.date.toString("dd.mm.yyyy").substr(0, 10)),
+              datasets: [{
+                data:  response.map((responseData)=>responseData.sum),
+                backgroundColor:
                     [
-                        'rgba(28, 222, 202, 1)',
-                        'rgba(28, 222, 202, 0.66)',
-                        'rgba(28, 222, 202, 0.33)'
+                      'rgba(28, 222, 202, 1)',
+                      'rgba(28, 222, 202, 0.66)',
+                      'rgba(28, 222, 202, 0.33)'
                     ],
-                    borderWidth:0,
-                    fill: false,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                   },
-                ],
+                borderWidth:0,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+              },
+              ],
             }
             this.loaded2 = true
+
         })
    }
   
