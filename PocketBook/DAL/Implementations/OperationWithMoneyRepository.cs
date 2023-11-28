@@ -6,6 +6,10 @@ namespace DAL.Implementations;
 
 public class OperationWithMoneyRepository : IOperationWithMoneyRepository
 {
+    public async Task<List<OperationWithMoney>> GetAll()
+        {
+            return await _context.OperationWithMoneys.ToListAsync();
+        }
     private readonly ApplicationDbContext _context;
 
     public OperationWithMoneyRepository(ApplicationDbContext context)

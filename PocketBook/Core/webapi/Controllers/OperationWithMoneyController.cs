@@ -64,14 +64,13 @@ namespace webapi.Controllers
 
         [HttpGet]
         [Route("GetWeeklyForBarChar")]
-        public async Task<IActionResult> GetWeeklyForBarCharAsync(bool isConsumption, DateTime finalDate)
+        public async Task<IActionResult> GetWeeklyForBarCharAsync()
         {
-            if (finalDate.Equals(default))
-            {
-                finalDate = DateTime.Now;
-            }
 
-            var barChar = await _service.GetWeeklyForBarCharAsync(isConsumption, finalDate);
+            var finalDate = DateTime.Now;
+
+
+            var barChar = await _service.GetWeeklyForBarCharAsync(true, finalDate);
 
             return barChar.Any() ? Ok(barChar) : NoContent();
         }
@@ -92,14 +91,13 @@ namespace webapi.Controllers
         
         [HttpGet]
         [Route("GetWeeklyForDoughnut")]
-        public async Task<IActionResult> GetWeeklyForDoughnutAsync(bool isConsumption, DateTime finalDate)
+        public async Task<IActionResult> GetWeeklyForDoughnutAsync()
         {
-            if (finalDate.Equals(default))
-            {
-                finalDate = DateTime.Now;
-            }
 
-            var barChar = await _service.GetWeeklyForDoughnutAsync(isConsumption, finalDate);
+            var finalDate = DateTime.Now;
+
+
+            var barChar = await _service.GetWeeklyForDoughnutAsync(true, finalDate);
 
             return barChar.Any() ? Ok(barChar) : NoContent();
         }

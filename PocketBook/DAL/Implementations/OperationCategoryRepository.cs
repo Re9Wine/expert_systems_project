@@ -50,9 +50,9 @@ public class OperationCategoryRepository : IOperationCategoryRepository
         return await _context.OperationCategories.FirstOrDefaultAsync(e => e.Name.Equals(name));
     }
 
-    public async Task<List<OperationCategory>> GetRangeAsync(int count, int skip)
+    public async Task<List<OperationCategory>> GetRangeAsync(bool isConsumption,int count, int skip)
     {
-        return await _context.OperationCategories.Skip(skip).Take(count).ToListAsync();
+        return await _context.OperationCategories.Where(e=>e.IsConsumption==isConsumption).Skip(skip).Take(count).ToListAsync();
     }
 
     public async Task<List<OperationCategory>> GetAllConsumption()

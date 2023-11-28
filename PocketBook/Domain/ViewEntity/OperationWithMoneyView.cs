@@ -4,8 +4,8 @@ namespace Domain.ViewEntity;
 
 public class OperationWithMoneyView //TODO add error messages
 {
-    [Required]
-    public Guid Id { get; set; }
+
+
     
     [Required(ErrorMessage = "")]
     [StringLength(100, ErrorMessage = "")]

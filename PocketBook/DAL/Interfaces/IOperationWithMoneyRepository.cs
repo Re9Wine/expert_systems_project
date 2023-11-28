@@ -4,6 +4,7 @@ namespace DAL.Interfaces;
 
 public interface IOperationWithMoneyRepository : IBaseRepository<OperationWithMoney>
 {
+    Task<List<OperationWithMoney>> GetAll();
     Task<List<OperationWithMoney>> GetRangeWithCategoriesAsync(bool isConsumption, int count, int skip);
 
     Task<List<OperationWithMoney>>

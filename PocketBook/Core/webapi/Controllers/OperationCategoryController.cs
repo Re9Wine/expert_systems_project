@@ -50,9 +50,9 @@ namespace webapi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetRangeAsync(int pageNumber, int pageElementCount)
+        public async Task<IActionResult> GetRangeAsync(bool isConsumption,int pageNumber, int pageElementCount)
         {
-            var categories = await _service.GetRangeAsync(pageNumber, pageElementCount);
+            var categories = await _service.GetRangeAsync(isConsumption,pageNumber, pageElementCount);
 
             return categories.Any() ? Ok(categories) : NoContent();
         }
