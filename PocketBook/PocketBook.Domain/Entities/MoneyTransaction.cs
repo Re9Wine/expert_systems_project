@@ -1,0 +1,13 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace PocketBook.Domain.Entities;
+
+public class MoneyTransaction : BaseEntity
+{
+    public Guid CategoryId { get; set; }
+    public string Description { get; set; } = null!;
+    public decimal Value { get; set; }
+    public DateTime Date { get; set; }
+    
+    public virtual TransactionCategory TransactionCategory  { get; set; } = null!;
+}
