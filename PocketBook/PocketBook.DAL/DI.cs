@@ -1,5 +1,6 @@
 using FluentMigrator.Runner;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using PocketBook.DAL.DbContexts;
 using PocketBook.DAL.Migrations;
@@ -12,7 +13,11 @@ public static class DI
 {
     public static void AddDAL(this IServiceCollection serviceCollection, string connectionString)
     {
-        serviceCollection.AddDbContext<PocketBookDbContext>(options => options.UseNpgsql(connectionString));
+        serviceCollection.AddDbContext<PocketBookDbContext>(options =>
+        {
+            options.UseNpgsql(connectionString);
+            options.UseLazyLoadingProxies();
+        });
 
         serviceCollection.AddFluentMigratorCore()
             .ConfigureRunner(runner => runner

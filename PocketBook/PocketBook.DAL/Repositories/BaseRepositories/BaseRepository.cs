@@ -37,12 +37,12 @@ internal class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity 
             query = query.Skip(skip.Value).Take(take.Value);
         }
 
-        return query.AsNoTracking().ToListAsync();
+        return query.ToListAsync();
     }
 
     public Task<TEntity?> GetByIdAsync(Guid id)
     {
-        return _dbSet.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+        return _dbSet.FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public async Task<TEntity> AddAsync(TEntity entity)

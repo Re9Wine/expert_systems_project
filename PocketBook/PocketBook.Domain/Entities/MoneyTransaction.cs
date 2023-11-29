@@ -5,7 +5,7 @@ namespace PocketBook.Domain.Entities;
 [Table(nameof(MoneyTransaction))]
 public class MoneyTransaction : BaseEntity
 {
-    public Guid CategoryId { get; set; }
+    public Guid TransactionCategoryId { get; set; }
     public string Description { get; set; } = null!;
     public decimal Value { get; set; }
     public DateTime Date { get; set; }

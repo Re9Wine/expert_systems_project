@@ -34,21 +34,36 @@ public class MoneyTransactionService : IMoneyTransactionService
         
         var moneyTransaction = _mapper.Map<MoneyTransaction>(createTransactionRequest);
 
-        moneyTransaction.CategoryId = existingCategory.Id;
+        moneyTransaction.TransactionCategoryId = existingCategory.Id;
 
         var moneyTransactionEntity = await _repository.AddAsync(moneyTransaction);
 
         if (!moneyTransactionEntity.TransactionCategory.IsConsumption)
         {
-            await UpdateCategoryPriorities(moneyTransactionEntity.Date.Date);
+            await UpdateCategoryPriorities(moneyTransactionEntity.Date);
         }
 
         return _mapper.Map<MoneyTransactionDTO>(moneyTransactionEntity);
     }
 
-    public Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id)
     {
-        return _repository.DeleteAsync(new MoneyTransaction { Id = id });
+        var transaction = await _repository.GetByIdAsync(id);
+
+        if (transaction is null)
+        {
+            return false;
+        }
+
+        var isConsumption = transaction.TransactionCategory.IsConsumption;
+        var isDeleted = await _repository.DeleteAsync(transaction);
+        
+        if (!isConsumption)
+        {
+            await UpdateCategoryPriorities(DateTime.Now);
+        }
+
+        return isDeleted;
     }
 
     public async Task<List<MoneyTransactionDTO>> GetRangeAsync(int skip, int take, bool isConsumption = true)
@@ -116,6 +131,9 @@ public class MoneyTransactionService : IMoneyTransactionService
                 transaction.Date >= monthStart && transaction.Date <= periodEnd && 
                 transaction.TransactionCategory.IsConsumption,
             query => query.OrderByDescending(transaction => transaction.Date));
+
+        if (!consumption.Any()) return new List<string>();
+        
         var consumptionGroupByCategory = consumption.GroupBy(transaction => transaction.TransactionCategory.Name);
 
         var recommendations = consumptionGroupByCategory.Where(transactionGroup => transactionGroup.Any())
@@ -145,16 +163,26 @@ public class MoneyTransactionService : IMoneyTransactionService
             query => query.OrderByDescending(transaction => transaction.Date));
         var totalIncome = income.Sum(transaction => transaction.Value);
         var totalConsumption = consumption.Sum(transaction => transaction.Value);
-
-        var totalMoneyRecommendation = (totalConsumption / totalIncome) switch
+        string totalMoneyRecommendation;
+        
+        if (totalIncome == 0)
         {
-            >= 1.0m => string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
-                Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
-                RecommendationsMessages.FindWayToEarnMoney),
-            _ => string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
-                Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
-                RecommendationsMessages.AllGood),
-        };
+            totalMoneyRecommendation = 
+                string.Format(RecommendationsMessages.TotalMoneyWithZeroIncomeRecommendationMessageFormat, 
+                    Math.Round(totalConsumption, 2), RecommendationsMessages.FindWayToEarnMoney);
+        }
+        else
+        {
+            totalMoneyRecommendation = (totalConsumption / totalIncome) switch
+            {
+                >= 1.0m => string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
+                    Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
+                    RecommendationsMessages.FindWayToEarnMoney),
+                _ => string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
+                    Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
+                    RecommendationsMessages.AllGood),
+            };   
+        }
         
         recommendations.Add(totalMoneyRecommendation);
         
@@ -172,13 +200,13 @@ public class MoneyTransactionService : IMoneyTransactionService
 
         var moneyTransaction = _mapper.Map<MoneyTransaction>(updateTransactionRequest);
 
-        moneyTransaction.CategoryId = existingCategory.Id;
+        moneyTransaction.TransactionCategoryId = existingCategory.Id;
         
         await _repository.UpdateAsync(moneyTransaction);
 
         if (!moneyTransaction.TransactionCategory.IsConsumption)
         {
-            await UpdateCategoryPriorities(moneyTransaction.Date.Date);
+            await UpdateCategoryPriorities(moneyTransaction.Date);
         }
         
         return true;
@@ -187,20 +215,20 @@ public class MoneyTransactionService : IMoneyTransactionService
     private async Task UpdateCategoryPriorities(DateTime periodEnd)
     {
         var monthStart = periodEnd.AddDays(-1 * periodEnd.Day + 1);
-        
+
         var consumptionCategories = await _categoryRepository.GetAsync(category => category.IsConsumption);
-        var monthIncome = await _repository.GetAsync(transaction => 
-            transaction.Date >= monthStart && transaction.Date <= periodEnd && 
+        var incomeCategories = await _repository.GetAsync(transaction =>
+            transaction.Date >= monthStart && transaction.Date <= periodEnd &&
             !transaction.TransactionCategory.IsConsumption);
-        
-        var totalIncome = monthIncome.Sum(income => income.Value);
+
+        var totalIncome = incomeCategories.Sum(income => income.Value);
         var totalPriority = consumptionCategories.Sum(category => category.Priority);
 
         foreach (var category in consumptionCategories)
         {
             category.Limit = totalIncome * category.Priority / totalPriority;
         }
-
+        
         await _categoryRepository.UpdateRangeAsync(consumptionCategories);
     }
 }

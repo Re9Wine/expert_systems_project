@@ -10,4 +10,7 @@ public static class RecommendationsMessages
     public const string TotalMoneyRecommendationMessageFormat = "У вас осталось {0} из {1}. {2}";
     public const string AllGood = "Все хорошо";
     public const string FindWayToEarnMoney = "Вы потратили больше чем имеете, найдите способ заработка";
+
+    public const string TotalMoneyWithZeroIncomeRecommendationMessageFormat = 
+        "У вас нет денег, но вы потратили {0}. {1}";
 }
