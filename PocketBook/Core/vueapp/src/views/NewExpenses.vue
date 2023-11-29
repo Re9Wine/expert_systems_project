@@ -52,7 +52,7 @@ export default {
   methods: {
     async handleSubmit() {
       try {
-        const response = await fetch('OperationWithMoney', {
+        const response = await fetch('MoneyTransaction', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -74,7 +74,7 @@ export default {
       }
     },
     check(){
-      fetch('OperationCategory?isConsumption='+ this.formData.TypeOperation +'&pageNumber=0&pageElementCount=15', {
+      fetch('TransactionCategory?isConsumption='+ this.formData.TypeOperation, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
