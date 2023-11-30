@@ -5,9 +5,6 @@ namespace PocketBook.Domain.Requests.TransactionCategoryRequests;
 
 public class UpdateTransactionCategoryRequest
 {
-    [Required(ErrorMessage = ValidationExceptionMessages.UpdatingObjectIsNotSelected)]
-    public Guid Id { get; set; }
-    
     [Required(ErrorMessage = ValidationExceptionMessages.FieldIsRequired)]
     [StringLength(100, ErrorMessage = ValidationExceptionMessages.OutOfStringMaxLenghtFormat)]
     public string Name { get; set; } = null!;
@@ -16,6 +13,6 @@ public class UpdateTransactionCategoryRequest
     [Range(0.0, 9999999999.99, ErrorMessage = ValidationExceptionMessages.OutOfDecimalPositiveValueFormal)]
     public decimal Limit { get; set; }
     
-    [Required(ErrorMessage = ValidationExceptionMessages.FieldIsRequired)]
-    public bool IsConsumption { get; set; }
+    // [Required(ErrorMessage = ValidationExceptionMessages.FieldIsRequired)]
+    // public bool IsConsumption { get; set; }
 }

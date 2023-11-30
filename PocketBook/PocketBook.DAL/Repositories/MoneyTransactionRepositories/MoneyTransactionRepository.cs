@@ -9,4 +9,9 @@ internal class MoneyTransactionRepository : BaseRepository<MoneyTransaction>, IM
     public MoneyTransactionRepository(PocketBookDbContext context) : base(context)
     {
     }
+
+    public int GetTransactionNumber(bool isConsumption)
+    {
+        return _dbSet.Count(transaction => transaction.TransactionCategory.IsConsumption == isConsumption);
+    }
 }

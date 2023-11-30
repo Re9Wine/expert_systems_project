@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using PocketBook.BLL.Services.TransactionCategoryServices;
 using PocketBook.Domain.Requests.TransactionCategoryRequests;
 using PocketBook.Domain.Resources;
-using webapi.Extensions;
 
 namespace webapi.Controllers;
 
@@ -18,25 +17,23 @@ public class TransactionCategoryController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateAsync(object formData)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateTransactionCategoryRequest createRequest)
     {
-        var createCategoryRequest = JsonSerializer<CreateTransactionCategoryRequest>.Deserialize(formData);
-        var category = await _service.CreateAsync(createCategoryRequest);
+        var category = await _service.CreateAsync(createRequest);
 
         return Ok(category);
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateAsync(object formData)
+    public async Task<IActionResult> UpdateAsync([FromBody] UpdateTransactionCategoryRequest updateRequest)
     {
-        var updateCategoryRequest = JsonSerializer<UpdateTransactionCategoryRequest>.Deserialize(formData);
-        var isUpdated = await _service.UpdateAsync(updateCategoryRequest);
+        var isUpdated = await _service.UpdateAsync(updateRequest);
         
         return isUpdated ? Ok() : BadRequest();
     }
 
-    [HttpDelete]
-    public async Task<IActionResult> DeleteAsync(string name)
+    [HttpDelete("{name}")]
+    public async Task<IActionResult> DeleteAsync([FromRoute] string name)
     {
         if (string.IsNullOrEmpty(name))
         {
@@ -48,11 +45,27 @@ public class TransactionCategoryController : ControllerBase
         return isDeleted ? Ok() : BadRequest();
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetByTypeAsync(bool isConsumption)
+    [HttpGet("ByType/{isConsumption:bool}")]
+    public async Task<IActionResult> GetByTypeAsync([FromRoute] bool isConsumption)
     {
         var categories = await _service.GetByTypeAsync(isConsumption);
 
-        return Ok(categories);
+        return categories.Any() ? Ok(categories) : NoContent();
+    }
+
+    [HttpGet("Changeable")]
+    public async Task<IActionResult> GetChangeableAsync()
+    {
+        var categories = await _service.GetChangeableAsync(true);
+
+        return categories.Any() ? Ok(categories) : NoContent();
+    }
+    
+    [HttpGet("MonthlyConsumption")]
+    public async Task<IActionResult> GetMonthlyConsumptionAsync()
+    {
+        var consumptionTableDTOs = await _service.GetMonthlyConsumptionAsync(DateTime.Now);
+
+        return consumptionTableDTOs.Any() ? Ok(consumptionTableDTOs) : NoContent();
     }
 }

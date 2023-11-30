@@ -1,10 +1,14 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PocketBook.BLL.Exceptions;
 using PocketBook.BLL.Resources;
 using PocketBook.DAL.Repositories.MoneyTransactionRepositories;
 using PocketBook.DAL.Repositories.TransactionCategoryRepositories;
+using PocketBook.Domain;
 using PocketBook.Domain.DTOs;
 using PocketBook.Domain.Entities;
+using PocketBook.Domain.Enums;
+using PocketBook.Domain.Pages;
 using PocketBook.Domain.Requests.MoneyTransactionRequests;
 
 namespace PocketBook.BLL.Services.MoneyTransactionServices;
@@ -60,28 +64,38 @@ public class MoneyTransactionService : IMoneyTransactionService
         
         if (!isConsumption)
         {
-            await UpdateCategoryPriorities(DateTime.Now);
+            await UpdateCategoryPriorities(DateTime.UtcNow);
         }
 
         return isDeleted;
     }
 
-    public async Task<List<MoneyTransactionDTO>> GetRangeAsync(int skip, int take, bool isConsumption = true)
+    public async Task<MoneyTransactionPage> GetRangeAsync(int pageNumber, int pageSize, bool isConsumption = true)
     {
         var transactions = await _repository.GetAsync(
             transaction => transaction.TransactionCategory.IsConsumption == isConsumption,
             query => query.OrderByDescending(transaction => transaction.Date),
-            skip, take);
+            (pageNumber - 1) * pageSize, pageSize);
+        var allTransactionsNumber = _repository.GetTransactionNumber(isConsumption);
+        var moneyTransactionPage = new MoneyTransactionPage
+        {
+            Transactions = _mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions),
+            PageInfo = new PageInfo
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalItems = allTransactionsNumber
+            }
+        };
 
-        return _mapper.Map<List<MoneyTransactionDTO>>(transactions);
+        return moneyTransactionPage;
     }
 
-    public async Task<List<MoneyTransactionDTO>> GetConsumptionPerPeriodAsync(DateTime periodStart, DateTime periodEnd)
+    public async Task<List<MoneyTransactionDTO>> GetFiveLastedConsumption()
     {
-        var transactions = await _repository.GetAsync(transaction => 
-                transaction.Date >= periodStart && transaction.Date <= periodEnd && 
-                transaction.TransactionCategory.IsConsumption,
-            query => query.OrderByDescending(transaction => transaction.Date));
+        var transactions = await _repository.GetAsync(
+            transaction => transaction.TransactionCategory.IsConsumption,
+            query => query.OrderByDescending(transaction => transaction.Date), 0, 5);
 
         return _mapper.Map<List<MoneyTransactionDTO>>(transactions);
     }
@@ -91,7 +105,7 @@ public class MoneyTransactionService : IMoneyTransactionService
         var periodStart = periodEnd.AddDays(-1 * (int)periodEnd.DayOfWeek);
         
         var transactions = await _repository.GetAsync(transaction =>
-            transaction.Date >= periodStart && transaction.Date <= periodEnd &&
+            transaction.Date.Date >= periodStart && transaction.Date.Date <= periodEnd &&
             transaction.TransactionCategory.IsConsumption);
         var transactionsGroupByDate = transactions.GroupBy(transaction => transaction.Date.Date);
 
@@ -103,40 +117,70 @@ public class MoneyTransactionService : IMoneyTransactionService
         var periodStart = periodEnd.AddDays(-1 * (int)periodEnd.DayOfWeek);
         
         var transactions = await _repository.GetAsync(transaction =>
-            transaction.Date >= periodStart && transaction.Date <= periodEnd &&
+            transaction.Date.Date >= periodStart && transaction.Date.Date <= periodEnd &&
             transaction.TransactionCategory.IsConsumption);
         var transactionsGroupByCategory = transactions.GroupBy(transaction => transaction.TransactionCategory.Name);
 
         return _mapper.Map<List<DoughnutDTO>>(transactionsGroupByCategory);
     }
 
-    public async Task<List<ConsumptionTableDTO>> GetMonthlyConsumptionAsync(DateTime periodEnd)
-    {
-        var monthStart = periodEnd.AddDays(-1 * periodEnd.Day + 1);
-        
-        var transactions = await _repository.GetAsync(transaction => 
-                transaction.Date >= monthStart && transaction.Date <= periodEnd && 
-                transaction.TransactionCategory.IsConsumption,
-            query => query.OrderByDescending(transaction => transaction.Date));
-        var transactionsGroupByCategory = transactions.GroupBy(transaction => transaction.TransactionCategory.Name);
-
-        return _mapper.Map<List<ConsumptionTableDTO>>(transactionsGroupByCategory);
-    }
-
-    public async Task<List<string>> GetMonthlyRecommendationsAsync(DateTime periodEnd)
+    public async Task<Dictionary<RecommendationStatus, List<RecommendationTableDTO>>> GetMonthlyRecommendationsAsync(DateTime periodEnd)
     {
         var monthStart = periodEnd.AddDays(-1 * periodEnd.Day + 1);
         
         var consumption = await _repository.GetAsync(transaction => 
-                transaction.Date >= monthStart && transaction.Date <= periodEnd && 
+                transaction.Date.Date >= monthStart && transaction.Date.Date <= periodEnd && 
                 transaction.TransactionCategory.IsConsumption,
             query => query.OrderByDescending(transaction => transaction.Date));
 
-        if (!consumption.Any()) return new List<string>();
+        if (!consumption.Any()) return new Dictionary<RecommendationStatus, List<RecommendationTableDTO>>();
         
         var consumptionGroupByCategory = consumption.GroupBy(transaction => transaction.TransactionCategory.Name);
+        var income = await _repository.GetAsync(transaction => 
+                transaction.Date >= monthStart && transaction.Date <= periodEnd && 
+                !transaction.TransactionCategory.IsConsumption,
+            query => query.OrderByDescending(transaction => transaction.Date));
+        var totalIncome = income.Sum(transaction => transaction.Value);
+        var totalConsumption = consumption.Sum(transaction => transaction.Value);
+        RecommendationTableDTO totalMoneyRecommendation;
+        
+        if (totalIncome == 0)
+        {
+            totalMoneyRecommendation = new RecommendationTableDTO
+            {
+                Status = RecommendationStatus.LimitExceeded,
+                Recommendation = string.Format(
+                    RecommendationsMessages.TotalMoneyWithZeroIncomeRecommendationMessageFormat,
+                    Math.Round(totalConsumption, 2), RecommendationsMessages.FindWayToEarnMoney)
+            };
+        }
+        else
+        {
+            totalMoneyRecommendation = (totalConsumption / totalIncome) switch
+            {
+                >= 1.0m => new RecommendationTableDTO
+                {
+                    Status = RecommendationStatus.LimitExceeded,
+                    Recommendation = string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
+                        Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
+                        RecommendationsMessages.FindWayToEarnMoney)
+                },
+                _ => new RecommendationTableDTO
+                {
+                    Status = RecommendationStatus.LimitNotExceeded,
+                    Recommendation = string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
+                        Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
+                        RecommendationsMessages.AllGood),
+                }
+            };
+        }
 
-        var recommendations = consumptionGroupByCategory.Where(transactionGroup => transactionGroup.Any())
+        var recommendations = new List<RecommendationTableDTO>
+        {
+            totalMoneyRecommendation
+        };
+
+        var categoryRecommendations = consumptionGroupByCategory.Where(transactionGroup => transactionGroup.Any())
             .Select(transactionGroup =>
             {
                 var categoryConsumption = transactionGroup.Sum(transaction => transaction.Value);
@@ -145,48 +189,35 @@ public class MoneyTransactionService : IMoneyTransactionService
 
                 return howMuchIsLimitExceeded switch
                 {
-                    >= 1.3m => string.Format(RecommendationsMessages.CategoryRecommendationMessageFormat,
-                        Math.Round(categoryConsumption, 2), Math.Round(limit, 2), transactionGroup.Key,
-                        RecommendationsMessages.LimitExceeded),
-                    >= 1.0m => string.Format(RecommendationsMessages.CategoryRecommendationMessageFormat,
-                        Math.Round(categoryConsumption, 2), Math.Round(limit, 2), transactionGroup.Key,
-                        RecommendationsMessages.LimitIsSlightlyExceeded),
-                    _ => string.Format(RecommendationsMessages.CategoryRecommendationMessageFormat,
-                        Math.Round(categoryConsumption, 2), Math.Round(limit, 2), transactionGroup.Key,
-                        RecommendationsMessages.LimitNotExceeded)
+                    >= 1.3m => new RecommendationTableDTO
+                    {
+                        Status = RecommendationStatus.LimitExceeded,
+                        Recommendation = string.Format(RecommendationsMessages.CategoryRecommendationMessageFormat,
+                            Math.Round(categoryConsumption, 2), Math.Round(limit, 2), transactionGroup.Key,
+                            RecommendationsMessages.LimitExceeded)
+                    },
+                    >= 1.0m => new RecommendationTableDTO
+                    {
+                        Status = RecommendationStatus.LimitIsSlightlyExceeded,
+                        Recommendation = string.Format(RecommendationsMessages.CategoryRecommendationMessageFormat,
+                            Math.Round(categoryConsumption, 2), Math.Round(limit, 2), transactionGroup.Key,
+                            RecommendationsMessages.LimitIsSlightlyExceeded)
+                    },
+                    _ => new RecommendationTableDTO
+                    {
+                        Status = RecommendationStatus.LimitNotExceeded,
+                        Recommendation = string.Format(RecommendationsMessages.CategoryRecommendationMessageFormat,
+                            Math.Round(categoryConsumption, 2), Math.Round(limit, 2), transactionGroup.Key,
+                            RecommendationsMessages.LimitNotExceeded)
+                    }
                 };
             }).ToList();
         
-        var income = await _repository.GetAsync(transaction => 
-                transaction.Date >= monthStart && transaction.Date <= periodEnd && 
-                !transaction.TransactionCategory.IsConsumption,
-            query => query.OrderByDescending(transaction => transaction.Date));
-        var totalIncome = income.Sum(transaction => transaction.Value);
-        var totalConsumption = consumption.Sum(transaction => transaction.Value);
-        string totalMoneyRecommendation;
-        
-        if (totalIncome == 0)
-        {
-            totalMoneyRecommendation = 
-                string.Format(RecommendationsMessages.TotalMoneyWithZeroIncomeRecommendationMessageFormat, 
-                    Math.Round(totalConsumption, 2), RecommendationsMessages.FindWayToEarnMoney);
-        }
-        else
-        {
-            totalMoneyRecommendation = (totalConsumption / totalIncome) switch
-            {
-                >= 1.0m => string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
-                    Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
-                    RecommendationsMessages.FindWayToEarnMoney),
-                _ => string.Format(RecommendationsMessages.TotalMoneyRecommendationMessageFormat,
-                    Math.Round(totalIncome - totalConsumption, 2), Math.Round(totalIncome),
-                    RecommendationsMessages.AllGood),
-            };   
-        }
-        
-        recommendations.Add(totalMoneyRecommendation);
-        
-        return recommendations;
+        recommendations.AddRange(categoryRecommendations);
+
+        return recommendations.GroupBy(item => item.Status)
+            .OrderBy(item => item.Key)
+            .ToDictionary(item => item.Key, item => item.ToList());
     }
 
     public async Task<bool> UpdateAsync(UpdateMoneyTransactionRequest updateTransactionRequest)

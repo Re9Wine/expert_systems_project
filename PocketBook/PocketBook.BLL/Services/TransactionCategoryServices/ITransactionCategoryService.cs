@@ -9,4 +9,6 @@ public interface ITransactionCategoryService
     Task<bool> UpdateAsync(UpdateTransactionCategoryRequest updateCategoryRequest);
     Task<bool> DeleteAsync(string name);
     Task<List<TransactionCategoryDTO>> GetByTypeAsync(bool isConsumption);
+    Task<List<TransactionCategoryDTO>> GetChangeableAsync(bool isConsumption);
+    Task<List<ConsumptionTableDTO>> GetMonthlyConsumptionAsync(DateTime periodEnd);
 }

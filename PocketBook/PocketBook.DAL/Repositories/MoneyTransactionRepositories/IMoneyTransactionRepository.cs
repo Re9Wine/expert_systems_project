@@ -5,4 +5,5 @@ namespace PocketBook.DAL.Repositories.MoneyTransactionRepositories;
 
 public interface IMoneyTransactionRepository : IBaseRepository<MoneyTransaction>
 {
+    int GetTransactionNumber(bool isConsumption);
 }

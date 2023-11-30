@@ -10,6 +10,5 @@ public class PocketBookDbContext : DbContext
     
     public PocketBookDbContext(DbContextOptions<PocketBookDbContext> options) : base(options)
     {
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
     }
 }

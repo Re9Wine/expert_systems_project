@@ -17,15 +17,14 @@ public class MoneyTransactionController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateAsync(object formData)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateMoneyTransactionRequest createRequest)
     {
-        var createMoneyTransactionRequest = JsonSerializer<CreateMoneyTransactionRequest>.Deserialize(formData);
-        var transaction = await _service.CreateAsync(createMoneyTransactionRequest);
+        var transaction = await _service.CreateAsync(createRequest);
 
         return Ok(transaction);
     }
 
-    [HttpDelete]
+    [HttpDelete("{operationId:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid operationId)
     {
         var isDeleted = await _service.DeleteAsync(operationId);
@@ -34,56 +33,51 @@ public class MoneyTransactionController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateAsync(object formData)
+    public async Task<IActionResult> UpdateAsync([FromBody] UpdateMoneyTransactionRequest updateRequest)
     {
-        var updateMoneyTransactionRequest = JsonSerializer<UpdateMoneyTransactionRequest>.Deserialize(formData);
-        var isUpdated = await _service.UpdateAsync(updateMoneyTransactionRequest);
+        var isUpdated = await _service.UpdateAsync(updateRequest);
 
         return isUpdated ? Ok() : BadRequest();
     }
 
-    [HttpGet]
-    [Route("GetFiveLastedConsumption")]
+    [HttpGet("FiveLastedConsumption")]
     public async Task<IActionResult> GetFiveLastedConsumption()
     {
-        var transactions = await _service.GetRangeAsync(0, 5);
+        var transactions = await _service.GetFiveLastedConsumption();
 
         return transactions.Any() ? Ok(transactions) : NoContent();
     }
 
-    [HttpGet]
-    [Route("GetForBarChar")]
+    [HttpGet("ForBarChar")]
     public async Task<IActionResult> GetForBarCharAsync()
     {
-        var barCharDTOs = await _service.GetConsumptionForBarCharAsync(DateTime.Now);
+        var barCharDTOs = await _service.GetConsumptionForBarCharAsync(DateTime.UtcNow.Date);
 
         return barCharDTOs.Any() ? Ok(barCharDTOs) : NoContent();
     }
 
-    [HttpGet]
-    [Route("GetForDoughnut")]
+    [HttpGet("ForDoughnut")]
     public async Task<IActionResult> GetForDoughnutAsync()
     {
-        var doughnutDTOs = await _service.GetConsumptionForDoughnutAsync(DateTime.Now);
+        var doughnutDTOs = await _service.GetConsumptionForDoughnutAsync(DateTime.UtcNow.Date);
 
         return doughnutDTOs.Any() ? Ok(doughnutDTOs) : NoContent();
     }
 
-    [HttpGet]
-    [Route("GetMonthlyRecommendations")]
+    [HttpGet("MonthlyRecommendations")]
     public async Task<IActionResult> GetMonthlyRecommendationsAsync()
     {
-        var recommendations = await _service.GetMonthlyRecommendationsAsync(DateTime.Now);
+        var recommendations = await _service.GetMonthlyRecommendationsAsync(DateTime.UtcNow.Date);
 
         return recommendations.Any() ? Ok(recommendations) : NoContent();
     }
 
-    [HttpGet]
-    [Route("GetMonthlyConsumption")]
-    public async Task<IActionResult> GetMonthlyConsumptionAsync()
+    [HttpGet("Page/{pageNumber:int}")]
+    public async Task<IActionResult> GetConsumptionPage([FromRoute] int pageNumber)
     {
-        var consumptionTableDTOs = await _service.GetMonthlyConsumptionAsync(DateTime.Now);
+        const int pageSize = 15;
+        var page = await _service.GetRangeAsync(pageNumber, pageSize);
 
-        return consumptionTableDTOs.Any() ? Ok(consumptionTableDTOs) : NoContent();
+        return page.Transactions.Any() ? Ok(page) : NoContent();
     }
 }

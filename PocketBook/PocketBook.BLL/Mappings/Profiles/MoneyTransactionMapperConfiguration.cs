@@ -11,7 +11,7 @@ public class MoneyTransactionMapperConfiguration : Profile
     {
         CreateMap<CreateMoneyTransactionRequest, MoneyTransaction>()
             .ForMember(member => member.Date,
-                expression => expression.MapFrom(_ => DateTime.Now));
+                expression => expression.MapFrom(_ => DateTime.UtcNow));
 
         CreateMap<UpdateMoneyTransactionRequest, MoneyTransaction>();
 
@@ -41,23 +41,6 @@ public class MoneyTransactionMapperConfiguration : Profile
             {
                 expression.PreCondition(source => source.Any());
                 expression.MapFrom(source => source.Sum(transaction => transaction.Value));
-            });
-
-        CreateMap<IGrouping<string, MoneyTransaction>, ConsumptionTableDTO>()
-            .ForMember(member => member.Category, expression =>
-            {
-                expression.PreCondition(source => source.Any());
-                expression.MapFrom(source => source.Key);
-            })
-            .ForMember(member => member.Sum, expression =>
-            {
-                expression.PreCondition(source => source.Any());
-                expression.MapFrom(source => source.Sum(transaction => transaction.Value));
-            })
-            .ForMember(member => member.Limit, expression =>
-            {
-                expression.PreCondition(source => source.Any());
-                expression.MapFrom(source => source.First().TransactionCategory.Limit);
             });
     }
 }

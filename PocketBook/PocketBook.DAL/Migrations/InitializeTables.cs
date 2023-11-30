@@ -19,11 +19,11 @@ public class InitializeTables : AutoReversingMigration
 
         Create.Table(nameof(MoneyTransaction))
             .WithColumn(nameof(MoneyTransaction.Id)).AsGuid().NotNullable().WithDefaultValue(Guid.NewGuid())
-                .PrimaryKey()
+            .PrimaryKey()
             .WithColumn(nameof(MoneyTransaction.TransactionCategoryId)).AsGuid().NotNullable()
             .WithColumn(nameof(MoneyTransaction.Description)).AsString(100).NotNullable()
             .WithColumn(nameof(MoneyTransaction.Value)).AsDecimal(10, 2).NotNullable()
-            .WithColumn(nameof(MoneyTransaction.Date)).AsDateTime2().NotNullable();
+            .WithColumn(nameof(MoneyTransaction.Date)).AsDateTime().NotNullable();
 
         Create.ForeignKey()
             .FromTable(nameof(MoneyTransaction)).ForeignColumn(nameof(MoneyTransaction.TransactionCategoryId))

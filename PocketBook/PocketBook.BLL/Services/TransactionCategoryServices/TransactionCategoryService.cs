@@ -36,23 +36,16 @@ public class TransactionCategoryService : ITransactionCategoryService
 
     public async Task<bool> UpdateAsync(UpdateTransactionCategoryRequest updateCategoryRequest)
     {
-        var existingCategoryId = await _repository.GetByIdAsync(updateCategoryRequest.Id);
+        var existingCategoryName = await _repository.GetByNameAsync(updateCategoryRequest.Name);
 
-        if (existingCategoryId is null)
+        if (existingCategoryName is null)
         {
             throw new ValidationExceptionResult(TransactionCategoryExceptionMessages.CategoryIsNotAvailable);
         }
         
-        if (!existingCategoryId.IsChangeable)
+        if (!existingCategoryName.IsChangeable)
         {
             throw new ValidationExceptionResult(TransactionCategoryExceptionMessages.CategoryIsImmutable);
-        }
-
-        var existingCategoryName = await _repository.GetByNameAsync(updateCategoryRequest.Name);
-
-        if (existingCategoryName is not null)
-        {
-            throw new ValidationExceptionResult(TransactionCategoryExceptionMessages.CategoryExists);
         }
 
         var category = _mapper.Map<TransactionCategory>(updateCategoryRequest);
@@ -79,5 +72,44 @@ public class TransactionCategoryService : ITransactionCategoryService
         var categories = await _repository.GetAsync(category => category.IsConsumption == isConsumption);
 
         return _mapper.Map<List<TransactionCategoryDTO>>(categories);
+    }
+
+    public async Task<List<TransactionCategoryDTO>> GetChangeableAsync(bool isConsumption)
+    {
+        var categories = await _repository.GetAsync(category => 
+            category.IsConsumption == isConsumption && category.IsChangeable);
+
+        return _mapper.Map<List<TransactionCategoryDTO>>(categories);
+    }
+
+    public async Task<List<ConsumptionTableDTO>> GetMonthlyConsumptionAsync(DateTime periodEnd)
+    {
+        var monthStart = periodEnd.AddDays(-1 * periodEnd.Day + 1);
+        
+        var categories = await _repository.GetAsync(category => 
+            (!category.MoneyTransactions.Any() || category.MoneyTransactions.Any(transaction => 
+                transaction.Date >= monthStart && transaction.Date <= periodEnd)) &&
+            category.IsConsumption);
+        var monthlyConsumption = categories.Select(category =>
+        {
+            if (!category.MoneyTransactions.Any())
+            {
+                return new ConsumptionTableDTO
+                {
+                    Category = category.Name,
+                    Sum = category.MoneyTransactions.Sum(transaction => transaction.Value),
+                    Limit = category.Limit
+                };
+            }
+
+            return new ConsumptionTableDTO
+            {
+                Category = category.Name,
+                Sum = 0,
+                Limit = category.Limit
+            };
+        }).ToList();
+
+        return monthlyConsumption;
     }
 }
