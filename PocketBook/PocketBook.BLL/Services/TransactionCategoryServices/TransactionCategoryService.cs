@@ -36,20 +36,20 @@ public class TransactionCategoryService : ITransactionCategoryService
 
     public async Task<bool> UpdateAsync(UpdateTransactionCategoryRequest updateCategoryRequest)
     {
-        var existingCategoryName = await _repository.GetByNameAsync(updateCategoryRequest.Name);
+        var category = await _repository.GetByNameAsync(updateCategoryRequest.Name);
 
-        if (existingCategoryName is null)
+        if (category is null)
         {
             throw new ValidationExceptionResult(TransactionCategoryExceptionMessages.CategoryIsNotAvailable);
         }
         
-        if (!existingCategoryName.IsChangeable)
+        if (!category.IsChangeable)
         {
             throw new ValidationExceptionResult(TransactionCategoryExceptionMessages.CategoryIsImmutable);
         }
 
-        var category = _mapper.Map<TransactionCategory>(updateCategoryRequest);
-
+        category.Limit = updateCategoryRequest.Limit;
+        
         await _repository.UpdateAsync(category);
         
         return true;
@@ -92,7 +92,7 @@ public class TransactionCategoryService : ITransactionCategoryService
             category.IsConsumption);
         var monthlyConsumption = categories.Select(category =>
         {
-            if (!category.MoneyTransactions.Any())
+            if (category.MoneyTransactions.Any())
             {
                 return new ConsumptionTableDTO
                 {
