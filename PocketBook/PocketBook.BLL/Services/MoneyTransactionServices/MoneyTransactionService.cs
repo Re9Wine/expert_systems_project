@@ -124,7 +124,7 @@ public class MoneyTransactionService : IMoneyTransactionService
         return _mapper.Map<List<DoughnutDTO>>(transactionsGroupByCategory);
     }
 
-    public async Task<Dictionary<RecommendationStatus, List<RecommendationTableDTO>>> GetMonthlyRecommendationsAsync(DateTime periodEnd)
+    public async Task<Dictionary<int, List<RecommendationTableDTO>>> GetMonthlyRecommendationsAsync(DateTime periodEnd)
     {
         var monthStart = periodEnd.AddDays(-1 * periodEnd.Day + 1);
         
@@ -133,7 +133,7 @@ public class MoneyTransactionService : IMoneyTransactionService
                 transaction.TransactionCategory.IsConsumption,
             query => query.OrderByDescending(transaction => transaction.Date));
 
-        if (!consumption.Any()) return new Dictionary<RecommendationStatus, List<RecommendationTableDTO>>();
+        if (!consumption.Any()) return new Dictionary<int, List<RecommendationTableDTO>>();
         
         var consumptionGroupByCategory = consumption.GroupBy(transaction => transaction.TransactionCategory.Name);
         var income = await _repository.GetAsync(transaction => 
@@ -217,7 +217,7 @@ public class MoneyTransactionService : IMoneyTransactionService
 
         return recommendations.GroupBy(item => item.Status)
             .OrderBy(item => item.Key)
-            .ToDictionary(item => item.Key, item => item.ToList());
+            .ToDictionary(item => (int)item.Key, item => item.ToList());
     }
 
     public async Task<bool> UpdateAsync(UpdateMoneyTransactionRequest updateTransactionRequest)

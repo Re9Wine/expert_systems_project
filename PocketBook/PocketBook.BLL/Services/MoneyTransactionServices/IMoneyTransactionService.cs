@@ -14,5 +14,5 @@ public interface IMoneyTransactionService
     Task<List<MoneyTransactionDTO>> GetFiveLastedConsumption();
     Task<List<BarCharDTO>> GetConsumptionForBarCharAsync(DateTime periodEnd);
     Task<List<DoughnutDTO>> GetConsumptionForDoughnutAsync(DateTime periodEnd);
-    Task<Dictionary<RecommendationStatus, List<RecommendationTableDTO>>> GetMonthlyRecommendationsAsync(DateTime periodEnd);
+    Task<Dictionary<int, List<RecommendationTableDTO>>> GetMonthlyRecommendationsAsync(DateTime periodEnd);
 }
