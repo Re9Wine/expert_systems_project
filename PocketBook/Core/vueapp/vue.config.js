@@ -25,10 +25,10 @@ module.exports = {
         },
         //TODO proxy - ����������� � ������������
         proxy: {
-            '^/OperationWithMoney': {
+            '^/MoneyTransaction': {
                 target: 'https://localhost:7137/',
             },
-            '^/OperationCategory': {
+            '^/TransactionCategory': {
                 target: 'https://localhost:7137/',
             }
         },
