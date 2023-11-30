@@ -15,10 +15,11 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(item, index) in table.date" :key="index">
+          <tr v-for="(item, index) in table.category" :key="index">
             <td data-label="#">{{ index + 1}}</td>
             <td data-label="Категория">{{table.category[index]}}</td>
-            <td data-label="Сумма">{{table.value[index]}}</td>
+            <td data-label="Сумма">{{table.sum[index]}}</td>
+            <td data-label="Сумма">{{table.limit[index]}}</td>
           </tr>
           </tbody>
         </table>
@@ -36,14 +37,14 @@ export default {
       loaded: false,
       loaded2: false,
       table: {
-        date:[],
         category:[],
-        value:[],
+        sum:[],
+        limit:[],
       },
     }
   },
   mounted() {
-    fetch('OperationWithMoney/GetFiveLastedConsumption', {
+    fetch('MoneyTransaction/GetMonthlyConsumption', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -52,9 +53,9 @@ export default {
         .then(response => response.json())
         .then(response =>{
           this.table={
-            date:response.map((responseData)=>responseData.date.toString("dd.mm.yyyy").substr(0, 10)),
             category:response.map((responseData)=>responseData.category),
-            value:response.map((responseData)=>responseData.value),
+            sum:response.map((responseData)=>responseData.sum),
+            limit:response.map((responseData)=>responseData.limit),
           }
           // var nameLengths = response.map(function(name) {
           //     return name.category;

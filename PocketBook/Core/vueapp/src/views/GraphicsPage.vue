@@ -196,7 +196,7 @@ export default {
                 borderWidth: 0,
                 fill: false,
                 borderColor: 'rgb(75, 192, 192)',
-                data: response.map((responseData)=>responseData.value),
+                data: response.map((responseData)=>responseData.sum),
                 tension: 0.1
               },],
             }

@@ -5,7 +5,7 @@
         Рекомендации
       </h1>
     </div>
-    <div class="message-container" v-for="(item, index) in messages[0]" :key="index">
+    <div class="message-container" v-for="(item, index) in messages" :key="index">
       {{item}}
     </div>
   </main>
@@ -21,7 +21,7 @@ export default {
     }
   },
   mounted() {
-    fetch('OperationWithMoney/GetWeeklyForDoughnut', {
+    fetch('MoneyTransaction/GetMonthlyRecommendations', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -29,8 +29,8 @@ export default {
     })
         .then(response => response.json())
         .then(response => {
-          this.messages = response.map((responseData) => responseData.errorMessages)
-
+          this.messages = response.map((responseData) => responseData)
+          console.log(this.messages)
           this.loaded=true
         })
   }

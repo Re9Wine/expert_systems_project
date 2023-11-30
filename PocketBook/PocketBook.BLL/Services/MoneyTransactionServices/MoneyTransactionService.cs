@@ -93,7 +93,7 @@ public class MoneyTransactionService : IMoneyTransactionService
         var transactions = await _repository.GetAsync(transaction =>
             transaction.Date >= periodStart && transaction.Date <= periodEnd &&
             transaction.TransactionCategory.IsConsumption);
-        var transactionsGroupByDate = transactions.GroupBy(transaction => transaction.Date);
+        var transactionsGroupByDate = transactions.GroupBy(transaction => transaction.Date.Date);
 
         return _mapper.Map<List<BarCharDTO>>(transactionsGroupByDate);
     }

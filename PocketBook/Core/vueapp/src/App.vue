@@ -2,7 +2,6 @@
   <div class="app">
     <Sidebar />
     <router-view />
-    
   </div>
 </template>
 

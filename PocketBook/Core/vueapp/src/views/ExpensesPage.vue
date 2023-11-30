@@ -76,7 +76,7 @@
         methods: {
             async handleSubmit() {
                 try {
-                    const response = await fetch('OperationCategory', {
+                    const response = await fetch('TransactionCategory', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -96,7 +96,7 @@
             },
             async redactSubmit() {
                 try {
-                    const response = await fetch('OperationCategory', {
+                    const response = await fetch('TransactionCategory', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -117,7 +117,7 @@
             },
         },
         mounted(){
-            fetch('OperationCategory', {
+            fetch('TransactionCategory?isConsumption=true', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
