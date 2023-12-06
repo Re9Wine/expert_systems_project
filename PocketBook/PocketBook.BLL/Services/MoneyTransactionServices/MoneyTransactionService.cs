@@ -137,7 +137,7 @@ public class MoneyTransactionService : IMoneyTransactionService
         
         var consumptionGroupByCategory = consumption.GroupBy(transaction => transaction.TransactionCategory.Name);
         var income = await _repository.GetAsync(transaction => 
-                transaction.Date >= monthStart && transaction.Date <= periodEnd && 
+                transaction.Date.Date >= monthStart && transaction.Date.Date <= periodEnd && 
                 !transaction.TransactionCategory.IsConsumption,
             query => query.OrderByDescending(transaction => transaction.Date));
         var totalIncome = income.Sum(transaction => transaction.Value);
@@ -185,7 +185,17 @@ public class MoneyTransactionService : IMoneyTransactionService
             {
                 var categoryConsumption = transactionGroup.Sum(transaction => transaction.Value);
                 var limit = transactionGroup.First().TransactionCategory.Limit;
-                var howMuchIsLimitExceeded = categoryConsumption / limit;
+                decimal howMuchIsLimitExceeded;
+
+                if (limit != 0)
+                {
+                    howMuchIsLimitExceeded = categoryConsumption / limit;
+                }
+                else
+                {
+                    howMuchIsLimitExceeded = categoryConsumption;
+                    limit = 0;
+                }
 
                 return howMuchIsLimitExceeded switch
                 {
