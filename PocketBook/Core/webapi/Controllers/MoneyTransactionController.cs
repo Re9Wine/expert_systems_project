@@ -73,11 +73,19 @@ public class MoneyTransactionController : ControllerBase
     }
 
     [HttpGet("Page/{pageNumber:int}")]
-    public async Task<IActionResult> GetConsumptionPage([FromRoute] int pageNumber)
+    public async Task<IActionResult> GetConsumptionPageAsync([FromRoute] int pageNumber)
     {
         const int pageSize = 15;
         var page = await _service.GetRangeAsync(pageNumber, pageSize);
 
         return page.Transactions.Any() ? Ok(page) : NoContent();
+    }
+
+    [HttpGet("SpendingTrends")]
+    public async Task<IActionResult> GetSpendingTrendsAsync()
+    {
+        var result = await _service.GetSpendingTrendsAsync();
+
+        return Ok(result);
     }
 }

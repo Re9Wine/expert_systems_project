@@ -230,6 +230,45 @@ public class MoneyTransactionService : IMoneyTransactionService
             .ToDictionary(item => (int)item.Key, item => item.ToList());
     }
 
+    public async Task<SpendingTrendsDTO> GetSpendingTrendsAsync()
+    {
+        var currentDate = DateTime.UtcNow.Date;
+        var previousMonthEnd = currentDate.AddDays(currentDate.Day * -1);
+        var previousPreviousMonthStart = currentDate.AddDays(1 + currentDate.Day * -1).AddMonths(-2);
+        var spending = await _repository.GetAsync(transaction => 
+            transaction.Date >= previousPreviousMonthStart && transaction.Date <= previousMonthEnd
+            && transaction.TransactionCategory.IsConsumption);
+
+        var spendingByMonth = spending.GroupBy(x => x.Date.Date)
+            .OrderByDescending(x => x.Key).ToList();
+        var previousMonthSpending = spendingByMonth.First().Key.Month != previousMonthEnd.Month ? 
+            new List<decimal>() :
+            spendingByMonth.First()
+            .GroupBy(transaction => transaction.TransactionCategory.Name).OrderBy(x => x.Key)
+            .Select(x => x.Sum(transaction => transaction.Value)).ToList();
+        var previousPreviousMonthSpending = spendingByMonth.Last().Key.Month != previousPreviousMonthStart.Month ?
+            new List<decimal>() :
+            spendingByMonth.Last()
+            .GroupBy(transaction => transaction.TransactionCategory.Name).OrderBy(x => x.Key)
+            .Select(x => x.Sum(transaction => transaction.Value)).ToList();
+        
+        return new SpendingTrendsDTO
+        {
+            Categories = (await _categoryRepository.GetAsync()).Select(category => category.Name)
+                .OrderBy(s => s).ToList(),
+            PreviousMonth = new MonthlyExpenses
+            {
+                Name = previousMonthEnd.ToString("MMMM"),
+                Values = previousMonthSpending
+            },
+            PreviousPreviousMonth = new MonthlyExpenses
+            {
+                Name = previousPreviousMonthStart.ToString("MMMM"),
+                Values = previousPreviousMonthSpending
+            }
+        };
+    }
+
     public async Task<bool> UpdateAsync(UpdateMoneyTransactionRequest updateTransactionRequest)
     {
         var existingCategory = await _categoryRepository.GetByNameAsync(updateTransactionRequest.Category);

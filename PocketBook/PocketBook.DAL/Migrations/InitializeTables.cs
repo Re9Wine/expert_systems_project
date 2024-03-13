@@ -9,7 +9,7 @@ public class InitializeTables : AutoReversingMigration
     public override void Up()
     {
         Create.Table(nameof(TransactionCategory))
-            .WithColumn(nameof(TransactionCategory.Id)).AsGuid().NotNullable().WithDefaultValue(Guid.NewGuid())
+            .WithColumn(nameof(TransactionCategory.Id)).AsGuid().NotNullable().WithDefaultValue("gen_random_uuid()")
                 .PrimaryKey()
             .WithColumn(nameof(TransactionCategory.Name)).AsString(100).NotNullable()
             .WithColumn(nameof(TransactionCategory.Priority)).AsInt32().NotNullable()
@@ -18,7 +18,7 @@ public class InitializeTables : AutoReversingMigration
             .WithColumn(nameof(TransactionCategory.IsConsumption)).AsBoolean().NotNullable();
 
         Create.Table(nameof(MoneyTransaction))
-            .WithColumn(nameof(MoneyTransaction.Id)).AsGuid().NotNullable().WithDefaultValue(Guid.NewGuid())
+            .WithColumn(nameof(MoneyTransaction.Id)).AsGuid().NotNullable().WithDefaultValue("gen_random_uuid()")
             .PrimaryKey()
             .WithColumn(nameof(MoneyTransaction.TransactionCategoryId)).AsGuid().NotNullable()
             .WithColumn(nameof(MoneyTransaction.Description)).AsString(100).NotNullable()

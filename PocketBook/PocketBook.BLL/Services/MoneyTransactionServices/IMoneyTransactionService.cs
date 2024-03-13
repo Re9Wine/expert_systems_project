@@ -1,5 +1,4 @@
 using PocketBook.Domain.DTOs;
-using PocketBook.Domain.Enums;
 using PocketBook.Domain.Pages;
 using PocketBook.Domain.Requests.MoneyTransactionRequests;
 
@@ -15,4 +14,5 @@ public interface IMoneyTransactionService
     Task<List<BarCharDTO>> GetConsumptionForBarCharAsync(DateTime periodEnd);
     Task<List<DoughnutDTO>> GetConsumptionForDoughnutAsync(DateTime periodEnd);
     Task<Dictionary<int, List<RecommendationTableDTO>>> GetMonthlyRecommendationsAsync(DateTime periodEnd);
+    Task<SpendingTrendsDTO> GetSpendingTrendsAsync();
 }
