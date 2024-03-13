@@ -117,7 +117,7 @@
             },
         },
         mounted(){
-            fetch('TransactionCategory?isConsumption=true', {
+            fetch('TransactionCategory/Changeable', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'

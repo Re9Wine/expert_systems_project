@@ -170,7 +170,7 @@ export default {
   mounted() {
         this.loaded = false;
         this.loaded2 = false;
-        fetch('MoneyTransaction/GetForDoughnut', {
+        fetch('MoneyTransaction/ForDoughnut', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -203,7 +203,7 @@ export default {
             this.loaded = true
 
         }),
-        fetch('MoneyTransaction/GetFiveLastedConsumption', {
+        fetch('MoneyTransaction/FiveLastedConsumption', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -222,7 +222,7 @@ export default {
             console.log(this.table.date);
 
         }),
-        fetch('MoneyTransaction/GetForBarChar', {
+        fetch('MoneyTransaction/ForBarChar', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'

@@ -74,7 +74,7 @@ export default {
       }
     },
     check(){
-      fetch('TransactionCategory?isConsumption='+ this.formData.TypeOperation, {
+      fetch('TransactionCategory/ByType/'+ this.formData.TypeOperation, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'

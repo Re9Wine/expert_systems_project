@@ -6,7 +6,17 @@
       </h1>
     </div>
     <div class="message-container" v-for="(item, index) in messages" :key="index">
-      {{item}}
+      <div v-for="(i, j) in item" :key="j">
+        <div v-if="i.status === 1" :style="{color: good}">
+          {{i.recommendation}}
+        </div>
+        <div v-else-if="i.status === 2" :style="{color: warning}">
+          {{i.recommendation}}
+        </div>
+        <div v-else :style="{color: dangerous}">
+          {{i.recommendation}}
+        </div>
+      </div>
     </div>
   </main>
 </template>
@@ -17,11 +27,14 @@ export default {
   data() {
     return {
       loaded: false,
-      messages:[],
+      messages: { },
+      good: 'green',
+      warning: 'yellow',
+      dangerous: 'red',
     }
   },
   mounted() {
-    fetch('MoneyTransaction/GetMonthlyRecommendations', {
+    fetch('MoneyTransaction/MonthlyRecommendations', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -29,7 +42,7 @@ export default {
     })
         .then(response => response.json())
         .then(response => {
-          this.messages = response.map((responseData) => responseData)
+          this.messages = response
           console.log(this.messages)
           this.loaded=true
         })
