@@ -44,7 +44,7 @@ export default {
     }
   },
   mounted() {
-    fetch('MoneyTransaction/GetMonthlyConsumption', {
+    fetch('TransactionCategory/MonthlyConsumption', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
