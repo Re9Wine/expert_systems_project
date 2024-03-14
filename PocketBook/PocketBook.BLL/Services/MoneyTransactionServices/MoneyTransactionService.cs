@@ -239,23 +239,64 @@ public class MoneyTransactionService : IMoneyTransactionService
             transaction.Date >= previousPreviousMonthStart && transaction.Date <= previousMonthEnd
             && transaction.TransactionCategory.IsConsumption);
 
+        var categories = (await _categoryRepository.GetAsync(category => category.IsConsumption))
+            .Select(category => category.Name)
+            .OrderBy(s => s).ToList();
+        List<decimal> previousMonthSpending;
+        List<decimal> previousPreviousMonthSpending;
+        
         var spendingByMonth = spending.GroupBy(x => x.Date.Date)
             .OrderByDescending(x => x.Key).ToList();
-        var previousMonthSpending = spendingByMonth.First().Key.Month != previousMonthEnd.Month ? 
-            new List<decimal>() :
-            spendingByMonth.First()
-            .GroupBy(transaction => transaction.TransactionCategory.Name).OrderBy(x => x.Key)
-            .Select(x => x.Sum(transaction => transaction.Value)).ToList();
-        var previousPreviousMonthSpending = spendingByMonth.Last().Key.Month != previousPreviousMonthStart.Month ?
-            new List<decimal>() :
-            spendingByMonth.Last()
-            .GroupBy(transaction => transaction.TransactionCategory.Name).OrderBy(x => x.Key)
-            .Select(x => x.Sum(transaction => transaction.Value)).ToList();
+        
+        if (spendingByMonth.First().Key.Month != previousMonthEnd.Month)
+        {
+            previousMonthSpending = new decimal[categories.Count].ToList();
+        }
+        else
+        {
+            var previousMonthSpendingByCategory = spendingByMonth.First()
+                .GroupBy(transaction => transaction.TransactionCategory.Name).OrderBy(x => x.Key)
+                .ToDictionary(x => x.Key, y => y.Sum(z => z.Value));
+
+            var totalPreviousMonthSpendingByCategory = categories.ToDictionary(category => category, _ => 0M);
+        
+            foreach (var category in categories)
+            {
+                if (previousMonthSpendingByCategory.TryGetValue(category, out var sum))
+                {
+                    totalPreviousMonthSpendingByCategory[category] += sum;
+                }
+            }
+
+            previousMonthSpending = totalPreviousMonthSpendingByCategory.Values.ToList();
+        }
+
+        if (spendingByMonth.Last().Key.Month != previousPreviousMonthStart.Month)
+        {
+            previousPreviousMonthSpending = new decimal[categories.Count].ToList();
+        }
+        else
+        {
+            var previousPreviousMonthSpendingByCategory = spendingByMonth.Last()
+                .GroupBy(transaction => transaction.TransactionCategory.Name).OrderBy(x => x.Key)
+                .ToDictionary(x => x.Key, y => y.Sum(z => z.Value));
+
+            var totalPreviousPreviousMonthSpendingByCategory = categories.ToDictionary(category => category, _ => 0M);
+        
+            foreach (var category in categories)
+            {
+                if (previousPreviousMonthSpendingByCategory.TryGetValue(category, out var sum))
+                {
+                    totalPreviousPreviousMonthSpendingByCategory[category] += sum;
+                }
+            }
+
+            previousPreviousMonthSpending = totalPreviousPreviousMonthSpendingByCategory.Values.ToList();
+        }
         
         return new SpendingTrendsDTO
         {
-            Categories = (await _categoryRepository.GetAsync()).Select(category => category.Name)
-                .OrderBy(s => s).ToList(),
+            Categories = categories,
             PreviousMonth = new MonthlyExpenses
             {
                 Name = previousMonthEnd.ToString("MMMM"),
