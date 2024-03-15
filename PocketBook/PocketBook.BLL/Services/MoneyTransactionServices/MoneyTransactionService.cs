@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PocketBook.BLL.Exceptions;
 using PocketBook.BLL.Resources;
+using PocketBook.BLL.Services.Statics;
 using PocketBook.DAL.Repositories.MoneyTransactionRepositories;
 using PocketBook.DAL.Repositories.TransactionCategoryRepositories;
 using PocketBook.Domain;
@@ -245,10 +246,10 @@ public class MoneyTransactionService : IMoneyTransactionService
         List<decimal> previousMonthSpending;
         List<decimal> previousPreviousMonthSpending;
         
-        var spendingByMonth = spending.GroupBy(x => x.Date.Date)
+        var spendingByMonth = spending.GroupBy(x => x.Date.Month)
             .OrderByDescending(x => x.Key).ToList();
         
-        if (spendingByMonth.First().Key.Month != previousMonthEnd.Month)
+        if (spendingByMonth.First().Key != previousMonthEnd.Month)
         {
             previousMonthSpending = new decimal[categories.Count].ToList();
         }
@@ -271,7 +272,7 @@ public class MoneyTransactionService : IMoneyTransactionService
             previousMonthSpending = totalPreviousMonthSpendingByCategory.Values.ToList();
         }
 
-        if (spendingByMonth.Last().Key.Month != previousPreviousMonthStart.Month)
+        if (spendingByMonth.Last().Key != previousPreviousMonthStart.Month)
         {
             previousPreviousMonthSpending = new decimal[categories.Count].ToList();
         }
@@ -308,6 +309,41 @@ public class MoneyTransactionService : IMoneyTransactionService
                 Values = previousPreviousMonthSpending
             }
         };
+    }
+
+    public async Task<List<ForecastByCategoryDTO>> GetForecastByCategoriesAsync()
+    {
+        var currentDate = DateTime.UtcNow.Date;
+        var previousMonthEnd = currentDate.AddDays(currentDate.Day * -1);
+        var previousTwelfthMonthStart = currentDate.AddDays(1 + currentDate.Day * -1).AddYears(-1);
+        
+        var consumptions = await _repository.GetAsync(transaction => 
+            transaction.Date >= previousTwelfthMonthStart && transaction.Date <= previousMonthEnd &&
+            transaction.TransactionCategory.IsConsumption);
+
+        var spendingByCategory = consumptions.GroupBy(x => x.TransactionCategory.Name)
+            .OrderByDescending(x => x.Key).ToList();
+
+        var forecast = new List<ForecastByCategoryDTO>();
+        
+        foreach (var spending in spendingByCategory)
+        {
+            var spendingByMonth = spending.GroupBy(s => (s.Date.Year, s.Date.Month)).ToList();
+            
+            if(spendingByMonth.Count <= 3) continue;
+
+            var spendingSumByMonth = spendingByMonth.OrderByDescending(x => x.Key)
+                .Select(x => x.Sum(transaction => transaction.Value)).ToList();
+            var timeSymbols = spendingByMonth.Select(x => x.Key).ToList();
+            
+            forecast.Add(new ForecastByCategoryDTO
+            {
+                Category = spending.Key,
+                Forecast = LeastSquares.ForecastForOneValue(spendingSumByMonth, timeSymbols)
+            });
+        }
+        
+        return forecast;
     }
 
     public async Task<bool> UpdateAsync(UpdateMoneyTransactionRequest updateTransactionRequest)

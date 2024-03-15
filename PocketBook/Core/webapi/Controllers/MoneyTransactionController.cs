@@ -88,4 +88,12 @@ public class MoneyTransactionController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("ForecastByCategoryForTheNextMonth")]
+    public async Task<IActionResult> ForecastByCategoryForTheNextMonthAsync()
+    {
+        var forecast = await _service.GetForecastByCategoriesAsync();
+
+        return forecast.Any() ? Ok(forecast) : NoContent();
+    }
 }
