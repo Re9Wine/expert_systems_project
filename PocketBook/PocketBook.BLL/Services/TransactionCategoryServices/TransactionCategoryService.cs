@@ -86,17 +86,26 @@ public class TransactionCategoryService : ITransactionCategoryService
     {
         var monthStart = periodEnd.Date.AddDays(-1 * periodEnd.Day + 1);
 
-        var categories = await _repository.GetAsync(category => 
-            category.MoneyTransactions.Any(transaction =>
-                transaction.Date.Date >= monthStart && transaction.Date.Date <= periodEnd && category.IsChangeable));
-
-        var monthlyConsumption = categories.Select(category => new ConsumptionTableDTO
+        var categories = await _repository.GetAsync(category => category.IsConsumption);
+        
+        var monthlyConsumption = categories.Select(category =>
+        {
+            var sum = 0M;
+            
+            if (category.MoneyTransactions.Any())
+            {
+                sum = category.MoneyTransactions
+                    .Where(transaction => transaction.Date.Date >= monthStart && transaction.Date <= periodEnd)
+                    .Sum(transaction => transaction.Value);
+            }
+            
+            return new ConsumptionTableDTO
             {
                 Category = category.Name,
-                Sum = category.MoneyTransactions.Sum(transaction => transaction.Value),
+                Sum = sum,
                 Limit = category.Limit
-            }
-        ).ToList();
+            };
+        }).ToList();
 
         return monthlyConsumption;
     }
