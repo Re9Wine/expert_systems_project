@@ -1,6 +1,7 @@
 using AutoMapper;
 using PocketBook.BLL.Exceptions;
 using PocketBook.BLL.Resources;
+using PocketBook.DAL.Repositories.MoneyTransactionRepositories;
 using PocketBook.DAL.Repositories.TransactionCategoryRepositories;
 using PocketBook.Domain.DTOs;
 using PocketBook.Domain.Entities;
@@ -12,11 +13,14 @@ public class TransactionCategoryService : ITransactionCategoryService
 {
     private readonly IMapper _mapper;
     private readonly ITransactionCategoryRepository _repository;
+    private readonly IMoneyTransactionRepository _moneyTransactionRepository;
 
-    public TransactionCategoryService(IMapper mapper, ITransactionCategoryRepository repository)
+    public TransactionCategoryService(IMapper mapper, ITransactionCategoryRepository repository,
+        IMoneyTransactionRepository moneyTransactionRepository)
     {
         _mapper = mapper;
         _repository = repository;
+        _moneyTransactionRepository = moneyTransactionRepository;
     }
 
     public async Task<TransactionCategoryDTO?> CreateAsync(CreateTransactionCategoryRequest createCategoryRequest)
@@ -76,8 +80,7 @@ public class TransactionCategoryService : ITransactionCategoryService
 
     public async Task<List<TransactionCategoryDTO>> GetChangeableAsync(bool isConsumption)
     {
-        var categories = await _repository.GetAsync(category => 
-            category.IsConsumption == isConsumption && category.IsChangeable);
+        var categories = await _repository.GetAsync(category => category.IsChangeable);
 
         return _mapper.Map<List<TransactionCategoryDTO>>(categories);
     }
@@ -87,17 +90,18 @@ public class TransactionCategoryService : ITransactionCategoryService
         var monthStart = periodEnd.Date.AddDays(-1 * periodEnd.Day + 1);
 
         var categories = await _repository.GetAsync(
-            filter: category => category.IsConsumption,
+            filter: category => category.IsConsumption && category.MoneyTransactions.Count >= 0,
             orderBy: query => query.OrderByDescending(category => category.Name));
-        
-        var monthlyConsumption = categories.Select(category =>
+
+        var monthlyConsumption = (await Task.WhenAll(categories.Select(async category =>
         {
             var sum = 0M;
             
             if (category.MoneyTransactions.Any())
             {
-                sum = category.MoneyTransactions
-                    .Where(transaction => transaction.Date.Date >= monthStart && transaction.Date <= periodEnd)
+                sum = (await _moneyTransactionRepository.GetAsync(transaction =>
+                        transaction.Date.Date >= monthStart && transaction.Date <= periodEnd &&
+                        transaction.TransactionCategory == category))
                     .Sum(transaction => transaction.Value);
             }
             
@@ -107,7 +111,7 @@ public class TransactionCategoryService : ITransactionCategoryService
                 Sum = sum,
                 Limit = category.Limit
             };
-        }).ToList();
+        }))).ToList();
 
         return monthlyConsumption;
     }
