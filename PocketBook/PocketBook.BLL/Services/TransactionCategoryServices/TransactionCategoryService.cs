@@ -86,7 +86,9 @@ public class TransactionCategoryService : ITransactionCategoryService
     {
         var monthStart = periodEnd.Date.AddDays(-1 * periodEnd.Day + 1);
 
-        var categories = await _repository.GetAsync(category => category.IsConsumption);
+        var categories = await _repository.GetAsync(
+            filter: category => category.IsConsumption,
+            orderBy: query => query.OrderByDescending(category => category.Name));
         
         var monthlyConsumption = categories.Select(category =>
         {
