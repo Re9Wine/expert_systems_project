@@ -45,6 +45,7 @@
       </router-link>
     </div>
   </aside>
+  <div class="hidden"></div>
 </template>
 
 <script setup>
@@ -61,6 +62,9 @@ const ToggleMenu = () => {
 </script>
 
 <style lang="scss" scoped>
+.hidden{
+  width: calc(2rem + 32px);
+}
 aside {
   display: flex;
   flex-direction: column;
@@ -71,6 +75,8 @@ aside {
   background: var(--dark-alt);;
   color: var(--light);
   transition: 0.2s ease-out;
+  position: fixed;
+
 
   .flex {
     flex: 1 1 0;
