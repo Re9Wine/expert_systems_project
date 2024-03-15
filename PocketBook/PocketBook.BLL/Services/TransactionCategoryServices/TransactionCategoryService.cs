@@ -1,7 +1,6 @@
 using AutoMapper;
 using PocketBook.BLL.Exceptions;
 using PocketBook.BLL.Resources;
-using PocketBook.DAL.Repositories.MoneyTransactionRepositories;
 using PocketBook.DAL.Repositories.TransactionCategoryRepositories;
 using PocketBook.Domain.DTOs;
 using PocketBook.Domain.Entities;
@@ -13,14 +12,11 @@ public class TransactionCategoryService : ITransactionCategoryService
 {
     private readonly IMapper _mapper;
     private readonly ITransactionCategoryRepository _repository;
-    private readonly IMoneyTransactionRepository _moneyTransactionRepository;
 
-    public TransactionCategoryService(IMapper mapper, ITransactionCategoryRepository repository,
-        IMoneyTransactionRepository moneyTransactionRepository)
+    public TransactionCategoryService(IMapper mapper, ITransactionCategoryRepository repository)
     {
         _mapper = mapper;
         _repository = repository;
-        _moneyTransactionRepository = moneyTransactionRepository;
     }
 
     public async Task<TransactionCategoryDTO?> CreateAsync(CreateTransactionCategoryRequest createCategoryRequest)
@@ -90,28 +86,29 @@ public class TransactionCategoryService : ITransactionCategoryService
         var monthStart = periodEnd.Date.AddDays(-1 * periodEnd.Day + 1);
 
         var categories = await _repository.GetAsync(
-            filter: category => category.IsConsumption && category.MoneyTransactions.Count >= 0,
+            filter: category => category.IsConsumption,
             orderBy: query => query.OrderByDescending(category => category.Name));
 
-        var monthlyConsumption = (await Task.WhenAll(categories.Select(async category =>
+        var monthlyConsumption = categories.Select(category =>
         {
             var sum = 0M;
+
+            var vs = category.Name;
             
             if (category.MoneyTransactions.Any())
             {
-                sum = (await _moneyTransactionRepository.GetAsync(transaction =>
-                        transaction.Date.Date >= monthStart && transaction.Date <= periodEnd &&
-                        transaction.TransactionCategory == category))
+                sum = category.MoneyTransactions.Where(transaction =>
+                        transaction.Date.Date >= monthStart && transaction.Date.Date <= periodEnd)
                     .Sum(transaction => transaction.Value);
             }
-            
+
             return new ConsumptionTableDTO
             {
                 Category = category.Name,
                 Sum = sum,
                 Limit = category.Limit
             };
-        }))).ToList();
+        }).ToList();
 
         return monthlyConsumption;
     }

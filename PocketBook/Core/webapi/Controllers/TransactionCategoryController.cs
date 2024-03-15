@@ -64,7 +64,7 @@ public class TransactionCategoryController : ControllerBase
     [HttpGet("MonthlyConsumption")]
     public async Task<IActionResult> GetMonthlyConsumptionAsync()
     {
-        var consumptionTableDTOs = await _service.GetMonthlyConsumptionAsync(DateTime.UtcNow);
+        var consumptionTableDTOs = await _service.GetMonthlyConsumptionAsync(DateTime.UtcNow.Date);
 
         return consumptionTableDTOs.Any() ? Ok(consumptionTableDTOs) : NoContent();
     }
