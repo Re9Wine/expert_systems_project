@@ -84,31 +84,19 @@ public class TransactionCategoryService : ITransactionCategoryService
 
     public async Task<List<ConsumptionTableDTO>> GetMonthlyConsumptionAsync(DateTime periodEnd)
     {
-        var monthStart = periodEnd.AddDays(-1 * periodEnd.Day + 1);
-        
-        var categories = await _repository.GetAsync(category => 
-            (!category.MoneyTransactions.Any() || category.MoneyTransactions.Any(transaction => 
-                transaction.Date >= monthStart && transaction.Date <= periodEnd)) &&
-            category.IsConsumption);
-        var monthlyConsumption = categories.Select(category =>
-        {
-            if (category.MoneyTransactions.Any())
-            {
-                return new ConsumptionTableDTO
-                {
-                    Category = category.Name,
-                    Sum = category.MoneyTransactions.Sum(transaction => transaction.Value),
-                    Limit = category.Limit
-                };
-            }
+        var monthStart = periodEnd.Date.AddDays(-1 * periodEnd.Day + 1);
 
-            return new ConsumptionTableDTO
+        var categories = await _repository.GetAsync(category => 
+            category.MoneyTransactions.Any(transaction =>
+                transaction.Date.Date >= monthStart && transaction.Date.Date <= periodEnd && category.IsChangeable));
+
+        var monthlyConsumption = categories.Select(category => new ConsumptionTableDTO
             {
                 Category = category.Name,
-                Sum = 0,
+                Sum = category.MoneyTransactions.Sum(transaction => transaction.Value),
                 Limit = category.Limit
-            };
-        }).ToList();
+            }
+        ).ToList();
 
         return monthlyConsumption;
     }
